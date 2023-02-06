@@ -1,0 +1,31 @@
+<!--components/timesSelectView/timesSelectView.wxml-->
+
+<block wx:if="{{pShow}}">
+  <view class="container">
+    <view class="times-view">
+
+      <view class="content-view"> 
+        <view class="view_1" wx:if="{{pStatus == 0}}">测试次数</view>
+        <view class="view_1" wx:if="{{pStatus != 0}}">调整MTU</view>
+
+        <!-- 输入框 -->
+        <view class="input-view" wx:if="{{pStatus == 0}}">
+          <input class="sub_0" maxlength="5" value="{{mTestNumber}}" type="number" bindinput="onInputTestNumber"/>
+          <image class="sub_1" src="/images/icon_delete@2x.png" mode="aspectFit" bindtap="onInputBack" />
+        </view>
+
+        <!-- MTU拖拉条 -->
+        <view class="slider-view" wx:if="{{pStatus != 0}}">
+          <slider class="sub_0" bindchange="onSliderChanged" bindchanging="onSliderchanging" activeColor="#398BFF" value="{{mMtuNumber}}" min="{{sl_min}}" max="{{sl_max}}" show-value/>
+        </view>
+
+      </view>
+
+      <view class="btn-view">
+        <view class="btn-canel" bindtap="onInputCancel">取消</view>
+        <view class="btn-confirm" bindtap="onInputConfirm">确定</view>
+      </view>
+
+    </view>
+  </view>
+</block>

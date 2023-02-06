@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "OTA-View":"/components/otaProgressView/otaProgressView",
+    "WAIT-View":"/components/waittingView/waittingView",
+    "tab-bar": "../../custom-tab-bar/index"
+  },
+  "backgroundColor": "#F4F7FB"
+}

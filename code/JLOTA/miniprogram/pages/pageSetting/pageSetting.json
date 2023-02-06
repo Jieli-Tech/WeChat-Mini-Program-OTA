@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "Times-View" :"/components/timesSelectView/timesSelectView",
+    "tab-bar": "../../custom-tab-bar/index"
+  },
+  "backgroundColor": "#F4F7FB"
+
+}

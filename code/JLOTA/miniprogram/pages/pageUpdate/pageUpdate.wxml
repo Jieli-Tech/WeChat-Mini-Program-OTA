@@ -1,0 +1,72 @@
+<view class="view_0">
+  <text class="text_0" >设备状态：</text>
+  <text class="text_1" wx:if="{{isBleConnect}}">已连接</text>
+  <text class="text_1" wx:if="{{!isBleConnect}}">未连接</text>
+
+</view>
+
+<view class="view_1">
+  <text class="text_2">设备类型：</text>
+  <text class="text_3" wx:if="{{isBleConnect}}">BLE</text>
+</view>
+
+<view class="view_2" >
+  <view class="view_3" bindtap="onAddOTAFile">
+    <!-- <text class="text_4">文件选择: {{fileOTA.name}}</text> -->
+    <text class="text_4">文件选择:</text> 
+    <image class="image_0" src="/images/icon_add@2x.png" mode="aspectFit"/>
+  </view>
+  <view class="view_6">
+    <image class="image_1" wx:if="{{fileArray.length==0}}" src="/images/img_01@2x.png" mode="aspectFit"/>
+
+    <scroll-view class="file_scroll" scroll-y wx:if="{{fileArray.length>0}}">
+      <view class="itemView" wx:for="{{fileArray}}" wx:key="id" bindtap="onSelectedFile"  data-item="{{item}}" data-index="{{item.id}}">
+
+          <view class="view_left">
+            <view class="image_l">
+              <image class="image_l" src="/images/icon_file@2x.png" mode="aspectFit"/>
+            </view>
+            <view class="text_l">{{item.fileItem.name}}</view>
+          </view>
+
+          <view class="view_right" >
+            <image wx:if="{{item.id != fileIndex}}" class="image_r" src="/images/icon_choose_nol@2x.png" mode="aspectFit"/>
+            <image wx:if="{{item.id == fileIndex}}" class="image_r" src="/images/icon_choose_sel@2x.png" mode="aspectFit"/>
+          </view>
+
+      </view>
+    </scroll-view>
+
+  </view>
+</view>
+
+<view class="view_4" wx:if="{{isBleConnect}}" bindtap="onUpdate">升级</view>
+<view class="view_5" wx:if="{{!isBleConnect}}" bindtap="onUpdate">升级</view>
+
+
+<!-- 
+    pShowOTA:Boolean,     //展示OTA升级界面
+    pValue:Number,        //进度
+    pNumber:Number,       //完成次数
+    pTimes:Number,        //测试总次数
+    pOtaFile:String,      //OTA文件名
+    pFailReason:String,   //失败原因 
+    pOtaResult:Number,    //0:成功 1:失败
+    pStatus:Number        //0:检验中 1:升级中 2:回连设备 3:升级成功 4:升级失败
+ -->
+<OTA-View 
+pShow="{{isShowProgress}}" 
+pStatus="{{mStatus}}"
+pOtaFile = "{{mOtaFile}}"
+pValue ="{{mValue}}"
+pNumber="{{mNumber}}"
+pTimes ="{{mTimes}}" 
+pOtaResult="{{mOtaResult}}"
+pFailReason="{{mFailReason}}"
+bind:OnConfirm="onOtaProgressViewConfirm">
+</OTA-View>
+
+<WAIT-View 
+pShow="{{isShowLoading}}" 
+pText="{{mLoadingText}}">
+</WAIT-View>

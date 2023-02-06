@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "tab-bar": "../../custom-tab-bar/index"
+  },
+  "backgroundColor": "#F4F7FB"
+}

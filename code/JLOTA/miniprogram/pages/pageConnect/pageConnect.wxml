@@ -1,0 +1,30 @@
+<!--pages/pageConnect/pageConnect.wxml-->
+<view class="view_header">
+    <view class="view_0">设备过滤条件</view>
+    <view class="view_1" bindtap="onFilterContent" data-index= '900'>
+      <text class="text_1">{{nameText}}</text>
+      <image class="image_1" src="/images/icon_return@2x.png" mode="aspectFit" ></image>
+    </view>
+</view>
+
+<view class="view_middle">设备列表</view>
+
+<scroll-view class="view_third" scroll-y refresher-enabled="{{true}}" refresherTriggered="{{triggerde}}" bindrefresherrefresh="onScrollviewRefresh">
+  <view class="itemView" wx:for="{{deviceList}}" wx:key="id" bindtap="onSelectedDevice"  data-item="{{item}}" data-index="{{item.id}}">
+    <view class="itemView_0">{{item.name}}</view>
+    <block wx:if="{{item.deviceId ===connectedDevice.deviceId }}">
+      <image class="itemView_1" src="/images/icon_choose@2x.png" mode="aspectFit"></image>
+    </block>
+  </view>
+</scroll-view>
+
+<block wx:if="{{hiddenmodalput === false}}">
+  <modal hidden="{{hiddenmodalput}}" title="设备过滤条件" confirm-text="确定" cancel-text="取消" bindcancel="onCancel" bindconfirm="onConfirm">
+  <input type='text'placeholder="请输入内容" value="{{nameText}}" bindinput="onInput" auto-focus/>
+  </modal>
+</block>
+
+
+
+
+

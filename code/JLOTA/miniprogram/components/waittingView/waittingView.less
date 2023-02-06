@@ -1,0 +1,130 @@
+/* components/waittingView/waittingView.wxss */
+
+.container{
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0);
+}
+
+.container_1{
+  background-color:rgba(0, 0, 0, 0);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.wait-view{
+  background-color:rgba(0, 0, 0, 0.7);
+
+  border-radius: 30rpx;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  width: 300rpx;
+  height: 300rpx;
+}
+
+.wait-text{
+  width: 300rpx;
+  height: 40rpx;
+  font-size: 34rpx;
+  font-family: PingFangSC-Regular, PingFang SC;
+  font-weight: 400;
+  text-align: center;
+  color: white;
+  line-height: 40rpx;
+
+  margin-top: 60rpx;
+}
+
+.box{
+  /* width: 100px; */
+  height: 100rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  overflow: unset;
+  
+}
+/* 第二个 */
+
+.loading{
+  position: relative;
+}
+.loading>view{
+  position: absolute;
+  width: 8rpx;
+  height: 30rpx;
+  border-radius: 10rpx;
+  background-color: white;
+}
+.loading>view:nth-child(1){
+  top: 30rpx;
+  left: 0rpx;
+  animation: loading infinite 1s;
+}
+.loading>view:nth-child(2){
+  top: 21.1rpx;//14.1442rpx;
+  left: 21.1rpx;//14.1442rpx;
+  transform: rotate(-45deg);
+  animation: loading infinite 1s 0.125s;
+}
+.loading>view:nth-child(3){
+  top: 0rpx;
+  left: 30rpx;
+  transform: rotate(90deg);
+  animation: loading infinite 1s 0.25s;
+}
+.loading>view:nth-child(4){
+  top: -21.1rpx;//-14.1442rpx;
+  left: 21.1rpx;//14.1442rpx;
+  transform: rotate(45deg);
+  animation: loading infinite 1s 0.375s;
+}
+.loading>view:nth-child(5){
+  top: -30rpx;
+  left: 0rpx;
+  transform: rotate(0deg);
+  animation: loading infinite 1s 0.5s;
+}
+.loading>view:nth-child(6){
+  top: -21.1rpx;//-14.1442rpx;
+  left: -21.1rpx;//-14.1442rpx;
+  transform: rotate(-45deg);
+  animation: loading infinite 1s 0.625s;
+}
+.loading>view:nth-child(7){
+  top: 0rpx;
+  left: -30rpx;
+  transform: rotate(90deg);
+  animation: loading infinite 1s 0.75s;
+}
+.loading>view:nth-child(8){
+  top: 21.1rpx; //14.1442rpx;
+  left:-21.1rpx; //-14.1442rpx;
+  transform: rotate(45deg);
+  animation: loading infinite 1s 0.875s;
+}
+@keyframes loading {
+  50% {
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 1;
+  }
+}

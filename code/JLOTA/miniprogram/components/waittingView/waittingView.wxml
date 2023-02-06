@@ -1,0 +1,23 @@
+<!--components/waittingView/waittingView.wxml-->
+
+<block wx:if="{{pShow}}">
+
+<view class="container">
+  <view class="container_1">
+    <view class="wait-view">
+      <!-- loading -->
+      <view class="box">
+        <view class="loading">
+          <view></view><view></view><view></view><view></view>
+          <view></view><view></view><view></view><view></view>
+        </view>
+      </view>
+
+      <view class="wait-text">{{pText}}</view>
+
+    </view>
+  </view>
+</view>
+
+</block> 
+

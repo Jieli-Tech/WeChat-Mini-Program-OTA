@@ -1,0 +1,50 @@
+<view class="container">
+  <view class="container_0">
+    <view class="view-0">
+      <text class="text-0" >设备认证</text>
+      <switch checked="{{isHandshake}}" color="#398BFF"  bindchange="onIsHandshakeDevice"/>
+    </view>
+    <view class="view-1" wx:if="{{false}}">
+      <text class="text-0">自动化测试OTA</text>
+      <switch checked="{{isAutoTest}}" color="#398BFF"  bindchange="onIsAutoTestDevice"/>
+    </view>
+    <view class="view-2" wx:if="{{false}}">
+      <text class="text-0">测试次数</text>
+      <view class="view-mtu" bindtap="onShowTestNumberView">
+        <view class="sub-0">{{mTestNum}}</view>
+        <image class="image-0" src="/images/icon_return@2x.png"  mode="aspectFit"/>
+      </view>
+    </view>
+    <view class="view-3" wx:if="{{mPlatform == 'android'}}" >
+      <text class="text-0">调整MTU</text>
+      <view class="view-mtu" bindtap="onShowMtuNumberView">
+        <view class="sub-0">{{mMtuNum}}</view>
+        <image class="image-0" src="/images/icon_return@2x.png"  mode="aspectFit"/>
+      </view>
+    </view>
+    <!-- <view class="view-4">
+      <text class="text-0">Log文件</text>
+      <image class="image-0" src="/images/icon_return@2x.png" bindtap="onShowLogFileView" mode="aspectFit"/>
+    </view> -->
+    <view class="view-5">
+      <text class="text-0">小程序版本号</text>
+      <text class="text-1">V2.0.0</text>
+    </view>    
+  </view>
+
+
+  <view class="container_1">
+    <text class="text-ver">SDK版本号：V2.0.0</text>
+  </view>
+</view>
+
+
+<Times-View 
+pShow="{{isTimesView}}"
+pStatus="{{mStatusTimesView}}" 
+pTestNumber="{{mTestNum}}"
+pMtuNumer="{{mMtuNum}}"
+bind:InputTestNumber="onTimesSelectTestNumber"
+bind:InputMtuNumber="onTimesSelectMTU"
+bind:InputCancel="onTimesSelectCancel">
+</Times-View>

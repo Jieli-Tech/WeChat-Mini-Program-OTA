@@ -1,0 +1,58 @@
+<!--components/otaProgressView.wxml-->
+<wxs module="filters" src="../../utils/tool.wxs"></wxs>
+
+<!-- 
+    pValue:Number,        //进度
+    pNumber:Number,       //完成次数
+    pTimes:Number,        //测试总次数
+    pOtaFile:String,      //OTA文件名
+    pOtaStatus:String,    //OTA状态说明 
+    pFailReason:String,   //失败原因 
+    pOtaResult:Number,    //0:成功 1:失败
+    pStatus:Number        //0:检验中 1:升级中 2:回连设备 3:升级成功 4:升级失败
+ -->
+<block wx:if="{{pShow}}">
+
+<view class="container">
+<!-- 第一种布局 -->
+ 
+<view style="height:{{otaBgHeight}}rpx;" class="ota-view">
+    <view wx:if="{{pTimes > 1}}" class="view_0">自动化测试程序：{{pNumber}}/{{pTimes}}</view>
+
+    <!-- 升级/校验 状态 -->
+    <block wx:if="{{pStatus == 0 || pStatus == 1}}">
+      <view wx:if="{{pStatus == 0}}" class="view_1">校验文件中 {{filters.toFix2(pValue)}}%</view>
+      <view wx:if="{{pStatus == 1}}" class="view_1">正在升级 {{filters.toFix2(pValue)}}%</view>
+      <view class="view_2">{{pOtaFile}}</view>
+      <progress class="ota-pg" border-radius="100" percent="{{pValue}}" stroke-width="3" color="#398BFF" hidden=""></progress>
+    </block>
+
+    <!-- 回连状态 -->
+    <block wx:if="{{pStatus == 2}}">
+      <!-- loading -->
+      <view class="box">
+        <view class="loading">
+          <view></view><view></view><view></view><view></view>
+          <view></view><view></view><view></view><view></view>
+        </view>
+      </view>  
+    </block>
+
+    <view wx:if="{{pStatus==0 || pStatus==1}}" class="view_3">(升级过程中，请保持蓝牙和网络打开状态)</view>
+    <view wx:if="{{pStatus==2}}" class="view_3">正在回连设备...</view>
+
+    <image wx:if="{{(pStatus==3 || pStatus==4)&&(pOtaResult == 0)}}" class="image_0" src="/images/icon_success_48_nol@2x.png" mode="aspectFit"/>
+    <image wx:if="{{(pStatus==3 || pStatus==4)&&(pOtaResult != 0)}}" class="image_0" src="/images/icon_fail_48_nol@2x.png" mode="aspectFit"/>
+
+    <view wx:if="{{(pStatus==3 || pStatus==4)&&(pOtaResult==0)}}" class="view_0">升级成功</view>
+    <view wx:if="{{(pStatus==3 || pStatus==4)&&(pOtaResult!=0)}}" class="view_0">升级失败</view>
+
+    <view wx:if="{{(pStatus==3 || pStatus==4)&&(pOtaResult != 0)}}" class="view_3">原因：{{pFailReason}}</view>
+    <view wx:if="{{(pStatus==3 || pStatus==4)&&(pTimes > 1)}}" class="view_3">测试任务次数:{{pNumber}} 测试成功次数:{{pTimes}}</view>
+    <view wx:if="{{(pStatus==3 || pStatus==4)}}" class="view-ok" bindtap="onOtaViewConfirm">确定</view>
+
+  </view>
+
+</view >
+
+</block> 
