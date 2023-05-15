@@ -133,7 +133,7 @@ export class ScanImpl {
   private _startTiming() {
     this.timeoutId = setTimeout(() => {
       this.stopScan();
-    }, 30000)
+    }, 15000)
   }
   private _onAdapter(res: WechatMiniprogram.OnBluetoothAdapterStateChangeCallbackResult) {
     if (this.callback && this.callback.onAdapter) {

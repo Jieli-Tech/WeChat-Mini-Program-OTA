@@ -253,7 +253,10 @@ export class BluetoothManager {
         that._BluetoothCallbackManager.onFoundDev(devices)
     }
     private _onScanAdapter(res: WechatMiniprogram.OnBluetoothAdapterStateChangeCallbackResult) {
-        that._BluetoothCallbackManager.onAdapter(res)
+        if (that._Reconnect != null && !res.discovering) { 
+            that._Reconnect.onScanStop() 
+        }        
+	    that._BluetoothCallbackManager.onAdapter(res)
     }
     private _onScanSuccess() {
         that._BluetoothCallbackManager.onScanSuccess()
