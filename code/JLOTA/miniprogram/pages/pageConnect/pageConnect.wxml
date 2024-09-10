@@ -1,30 +1,35 @@
 <!--pages/pageConnect/pageConnect.wxml-->
-<view class="view_header">
-    <view class="view_0">设备过滤条件</view>
-    <view class="view_1" bindtap="onFilterContent" data-index= '900'>
-      <text class="text_1">{{nameText}}</text>
-      <image class="image_1" src="/images/icon_return@2x.png" mode="aspectFit" ></image>
+<view class="layout-row" id="filter-contain" catchtap="onSetFilter">
+    <view>设备过滤条件</view>
+    <view class="gray-838383 layout-row" style="align-items: center;">
+        <text wx:if="{{filterDevName===''}}">内容</text>
+        <text wx:else="">{{filterDevName}}</text>
+        <image class="icon-next" src="../../images/icon_return.png"></image>
     </view>
 </view>
-
-<view class="view_middle">设备列表</view>
-
-<scroll-view class="view_third" scroll-y refresher-enabled="{{true}}" refresherTriggered="{{triggerde}}" bindrefresherrefresh="onScrollviewRefresh">
-  <view class="itemView" wx:for="{{deviceList}}" wx:key="id" bindtap="onSelectedDevice"  data-item="{{item}}" data-index="{{item.id}}">
-    <view class="itemView_0">{{item.name}}</view>
-    <block wx:if="{{item.deviceId ===connectedDevice.deviceId }}">
-      <image class="itemView_1" src="/images/icon_choose@2x.png" mode="aspectFit"></image>
+<view class="layout-row gray-838383" id="scan-status">
+    <view>设备列表</view>
+    <image wx:if="{{isScaning}}" id="icon-loading" style="margin-left: 24rpx;" src="../../images/loading.png"></image>
+</view>
+<scroll-view class="scan-contain" scroll-y refresher-enabled="{{true}}" refresher-threshold="{{80}}" refresher-default-style="none" refresher-background="#F4F7FB" bindrefresherpulling="onPulling" refresher-triggered="{{triggered}}" bindrefresherrefresh="onRefresh" bindrefresherrestore="onRestore" bindrefresherabort="onAbort">
+    <view slot="refresher" class="refresh-container" style="display: block; width: 100%; height: 80px; background: #F4F7FB; display: flex; align-items: center;">
+        <view class="view1" style="position: absolute; text-align: center; width: 100%;">
+            下拉刷新
+        </view>
+    </view>
+    <block wx:for="{{scanDevices}}">
+        <view class="item-scandev-contain layout-row" catchtap="onSelectedDevice" data-item="{{item}}">
+            <view class="item-scandev-left">
+                <view>{{item.name}}</view>
+                <view class="layout-row gray-B0B0B0" style="font-size: 24rpx;">
+                    <view class="rssi">rssi:{{(item.deviceId===connectedDevice.deviceId)? 0 : item.RSSI}},</view>
+                    <view>deviceId : {{item.deviceId}}</view>
+                </view>
+            </view>
+            <view class="item-scandev-right">
+                <image wx:if="{{item.deviceId===connectedDevice.deviceId}}" style="height: 48rpx;width: 48rpx;" src="../../images/icon_choose.png"></image>
+            </view>
+        </view>
+        <view class="space-line"></view>
     </block>
-  </view>
 </scroll-view>
-
-<block wx:if="{{hiddenmodalput === false}}">
-  <modal hidden="{{hiddenmodalput}}" title="设备过滤条件" confirm-text="确定" cancel-text="取消" bindcancel="onCancel" bindconfirm="onConfirm">
-  <input type='text'placeholder="请输入内容" value="{{nameText}}" bindinput="onInput" auto-focus/>
-  </modal>
-</block>
-
-
-
-
-

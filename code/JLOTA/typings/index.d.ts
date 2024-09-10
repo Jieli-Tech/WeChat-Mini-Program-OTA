@@ -1,6 +1,6 @@
 /// <reference path="./types/index.d.ts" />
 
-import { BluetoothManager } from "../miniprogram/lib/bluetoothManager";
+import { BluetoothOTAManager } from "../miniprogram/lib/bluetoothOTAManager";
 
 
 
@@ -8,10 +8,15 @@ interface IAppOption {
   globalData: {
     userInfo?: WechatMiniprogram.UserInfo,
     gbIsHandshake: boolean,
-    gbIsAutoTest:boolean,
+    gbIsAutoTest: boolean,
     gbTestNum: number,
     gbMtuNum: number,
-    bluetoothManager:BluetoothManager,
+    gbDevelop:boolean,
+    gbEnableDebug:boolean,
+    // gbServiceUUID: string,
+    // gbNotifyCharacteristicUUID: string,
+    // gbWriteCharacteristicUUID: string,
+    bluetoothManager: BluetoothOTAManager,
   }
   userInfoReadyCallback?: WechatMiniprogram.GetUserInfoSuccessCallback,
 }

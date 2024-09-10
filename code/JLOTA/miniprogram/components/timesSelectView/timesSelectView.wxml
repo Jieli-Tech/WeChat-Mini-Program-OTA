@@ -11,7 +11,7 @@
         <!-- 输入框 -->
         <view class="input-view" wx:if="{{pStatus == 0}}">
           <input class="sub_0" maxlength="5" value="{{mTestNumber}}" type="number" bindinput="onInputTestNumber"/>
-          <image class="sub_1" src="/images/icon_delete@2x.png" mode="aspectFit" bindtap="onInputBack" />
+          <image class="sub_1" src="/images/icon_delete.png" mode="aspectFit" bindtap="onInputBack" />
         </view>
 
         <!-- MTU拖拉条 -->

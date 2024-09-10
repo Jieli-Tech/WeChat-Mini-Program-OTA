@@ -1,50 +1,84 @@
 <view class="container">
   <view class="container_0">
     <view class="view-0">
-      <text class="text-0" >设备认证</text>
-      <switch checked="{{isHandshake}}" color="#398BFF"  bindchange="onIsHandshakeDevice"/>
+      <text class="text-0">设备认证</text>
+      <switch checked="{{isHandshake}}" color="#398BFF" bindchange="onIsHandshakeDevice" />
     </view>
     <view class="view-1" wx:if="{{false}}">
       <text class="text-0">自动化测试OTA</text>
-      <switch checked="{{isAutoTest}}" color="#398BFF"  bindchange="onIsAutoTestDevice"/>
+      <switch checked="{{isAutoTest}}" color="#398BFF" bindchange="onIsAutoTestDevice" />
     </view>
     <view class="view-2" wx:if="{{false}}">
       <text class="text-0">测试次数</text>
       <view class="view-mtu" bindtap="onShowTestNumberView">
         <view class="sub-0">{{mTestNum}}</view>
-        <image class="image-0" src="/images/icon_return@2x.png"  mode="aspectFit"/>
+        <image class="image-0" src="/images/icon_return.png" mode="aspectFit" />
       </view>
     </view>
-    <view class="view-3" wx:if="{{mPlatform == 'android'}}" >
+    <view class="view-3" wx:if="{{mPlatform == 'android'}}">
       <text class="text-0">调整MTU</text>
       <view class="view-mtu" bindtap="onShowMtuNumberView">
         <view class="sub-0">{{mMtuNum}}</view>
-        <image class="image-0" src="/images/icon_return@2x.png"  mode="aspectFit"/>
+        <image class="image-0" src="/images/icon_return.png" mode="aspectFit" />
       </view>
     </view>
-    <!-- <view class="view-4">
+    <view class="view-5" wx:if="{{developMode}}" catch:tap="onUploadLogFile">
       <text class="text-0">Log文件</text>
-      <image class="image-0" src="/images/icon_return@2x.png" bindtap="onShowLogFileView" mode="aspectFit"/>
-    </view> -->
+      <text class="btn-1">上传</text>
+    </view>
+    <view class="view-2" wx:if="{{developMode}}">
+      <text class="text-0">Log等级</text>
+      <picker mode="selector" bindchange="onLogGradePickerChange" value="{{logGrade}}" range="{{logGradeArray}}">
+        <view class="view-mtu">
+          <view class="sub-0"> {{logGradeArray[logGrade]}}</view>
+          <image class="image-0" src="/images/icon_return.png" mode="aspectFit" />
+        </view>
+      </picker>
+    </view>
+    <view class="view-5" wx:if="{{developMode}}">
+      <text class="text-0">小程序开发调试</text>
+      <switch checked="{{isEnableDebug}}" color="#398BFF" bindchange="onEnableDebug" />
+    </view>
+    <view class="view-5" wx:if="{{developMode}}" catch:tap="onTestCustomCmd">
+      <text class="text-0">自定义命令</text>
+      <image class="image-0" src="/images/icon_return.png" mode="aspectFit" />
+    </view>
+    <view class="view-5" wx:if="{{developMode}}" catch:tap="onBLEDataSetting">
+      <text class="text-0">BLE通讯配置</text>
+      <image class="image-0" src="/images/icon_return.png" mode="aspectFit" />
+    </view>
     <view class="view-5">
       <text class="text-0">小程序版本号</text>
-      <text class="text-1">V2.0.0</text>
-    </view>    
+      <text class="text-1" catch:longpress="onDevelopMode">V2.1.0</text>
+    </view>
+    <view class="view-5">
+      <text class="text-0">SDK版本号</text>
+      <text class="text-1">V2.1.1</text>
+    </view>
   </view>
 
 
-  <view class="container_1">
+  <!-- <view class="container_1">
     <text class="text-ver">SDK版本号：V2.0.0</text>
-  </view>
+  </view> -->
 </view>
 
 
-<Times-View 
-pShow="{{isTimesView}}"
-pStatus="{{mStatusTimesView}}" 
-pTestNumber="{{mTestNum}}"
-pMtuNumer="{{mMtuNum}}"
-bind:InputTestNumber="onTimesSelectTestNumber"
-bind:InputMtuNumber="onTimesSelectMTU"
-bind:InputCancel="onTimesSelectCancel">
+<Times-View pShow="{{isTimesView}}" pStatus="{{mStatusTimesView}}" pTestNumber="{{mTestNum}}" pMtuNumer="{{mMtuNum}}" bind:InputTestNumber="onTimesSelectTestNumber" bind:InputMtuNumber="onTimesSelectMTU" bind:InputCancel="onTimesSelectCancel">
 </Times-View>
+<view class="view_log" wx:if="{{logViewVisible}}">
+  <view class="dialog_log">
+    <text class="title">上传Log文件</text>
+    <text>【上传步骤】：</text>
+    <text>步骤1： 反馈类型选择[功能异常]</text>
+    <text>步骤2： 反馈内容选择[其他异常]</text>
+    <text>步骤3： 填写日志描述(必须10字以上)</text>
+    <text>步骤4： 点击[提交]</text>
+    <text>【查看日志】: </text>
+    <text>小程序开发者可以通过小程序管理后台左侧菜单“反馈管理”页面查看相关打印日志</text>
+    <view class="btn">
+      <button catch:tap="onCancelUploadLog">暂不上传</button>
+      <button catch:tap="onConfirmUploadLog" open-type="feedback">上传日志</button>
+    </view>
+  </view>
+</view>

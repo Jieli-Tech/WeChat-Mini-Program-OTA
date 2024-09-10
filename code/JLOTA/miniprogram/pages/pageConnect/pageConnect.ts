@@ -1,9 +1,11 @@
 import { IAppOption } from "../../../typings/index"
-import { BluetoothEventCallback, BluetoothManager } from "../../lib/bluetoothManager"
+import { BTBean, BTAdapter } from "../../lib/bluetooth"
+import { BluetoothEventCallback, BluetoothOTAManager } from "../../lib/bluetoothOTAManager"
+import { loge, logv } from "../../lib/log"
 
 // pages/pageConnect/pageConnect.ts
 const app = getApp<IAppOption>()
-var sBluetoothManager: BluetoothManager
+var sBluetoothManager: BluetoothOTAManager
 var sBluetoothEventCallback: BluetoothEventCallback
 
 Page({
@@ -12,30 +14,36 @@ Page({
    * 页面的初始数据
    */
   data: {
-    hiddenmodalput: true,
-    triggerde: true,
-    Isfreshing: false,
+    isScaning: false,
+    triggered: false,
+    filterDevName: '',
     connectedDevice: <any>null,
-    deviceList: <any>[
-      {id:0,name:"device 1", status:0},
-      {id:1,name:"device 2", status:0},
-      {id:2,name:"device 3", status:1}
-    ],
-    nameText:""
+    scanDevices: <any>[],
   },
-  
+  _freshing: false,
+  _foundSrcDevlist: new Array(),
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad() {
+    const value = wx.getStorageSync('filterDevName')
+    if (value) {
+      this.setData({ filterDevName: value })
+    }
     sBluetoothManager = app.globalData.bluetoothManager
     sBluetoothEventCallback = new BluetoothEventCallback();
+    sBluetoothEventCallback.onBluetoothAdapter = this._onBluetoothAdapter
+    sBluetoothEventCallback.onLocation = this._onLocation
+    sBluetoothEventCallback.onScanStart = this._onScanStart
+    sBluetoothEventCallback.onScanFailed = this._onScanFailed
+    sBluetoothEventCallback.onScanFinish = this._onScanFinish
     sBluetoothEventCallback.onFoundDev = this._OnFoundDevs
     sBluetoothEventCallback.onDevStatusSuccess = this._onDevConnectSuccess
     sBluetoothEventCallback.onDevStatusDisconnect = this._onDevDisconnect
     sBluetoothEventCallback.onDevStatusFailed = this._onDevConnectFailed
     sBluetoothManager.addBluetoothEventCallback(sBluetoothEventCallback)
-    this._scanDevice()
+    // this._scanDevice()
+    sBluetoothManager.sanDevice();
   },
   onShow() {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
@@ -47,187 +55,122 @@ Page({
   onUnload() {
     sBluetoothManager.removeBluetoothEventCallback(sBluetoothEventCallback)
   },
-  onFilterContent: function (e: any) {
-    console.log(e)
-    this.setData({
-      hiddenmodalput: !this.data.hiddenmodalput
-    })
-  },
-
   onSelectedDevice: function (e: any) {
-    console.log(e.target.dataset.index)
-    // if (e.target.dataset.index >= 0) {
-    //   wx.showToast({
-    //     title: 'Click ' + e.target.dataset.index,
-    //     icon: 'none'
-    //   })
+    logv(e.currentTarget.dataset.item)
     let device = e.currentTarget.dataset.item;
-      let connectedDevice = sBluetoothManager.getConnectedDevice();
-      if (connectedDevice != null) {
-        if (device.deviceId !== connectedDevice.deviceId) {
-          wx.showToast({
-            title: '请先断开已连接的设备',
-            icon: 'none'
-          })
-          return;
-        } else {
-          wx.showModal({
-            title: '提示',
-            content: '是否要断开该设备',
-            success(res) {
-              if (res.confirm) {
-                sBluetoothManager.disconnectDevice()
-              } else if (res.cancel) {
-                console.log('用户点击取消')
-              }
-            }
-          })
-        }
-      } else {
-        if (sBluetoothManager.connectDevice(device, false)) {
-          wx.showLoading({
-            title: '连接中',
-          })
-        } else {
-          wx.showModal({
-            title: '提示',
-            content: "请不要频繁断开连接设备",
-            showCancel:true
-          });
-        }
-      }
-    // }
-  },
-
-  onScrollviewRefresh() {
-
-    if (this.data.Isfreshing) return;
-    this.setData({
-      Isfreshing: true
-    })
-    if (!this.data.triggerde) {
-      this.setData({
-        triggerde: true
-      })
-    }//保证刷新状态下，triggered为true  
-
-    console.log("搜索设备...")
-    this._scanDevice()
-
-
-    setTimeout(() => {
-      console.log("超时处理")
-      this.setData({
-        triggerde: false,//触发onRestore，关闭刷新图标  
-        Isfreshing: false
-      })
-    }, 1500);
-  },
-
-  //取消按钮
-  onCancel: function () {
-    this.setData({
-      hiddenmodalput: true,
-      modalContent: ""
-    });
-  },
-  //确认
-  onConfirm: function () {
-    this.setData({
-      hiddenmodalput: true,
-      modalContent: ""
-    })
-  },
-  onInput: function (e: any) {
-    console.log("打卡内容：" + e.detail.value)
-    this.setData({
-      nameText:e.detail.value
-    })
-    this._scanDevice()
-  },
-  _scanDevice() {
-    //Android平台检测是否有开启位置权限，
-    let info = wx.getSystemInfoSync()
-    console.error(info)
-    //检测是否有位置权限
-    if (info.platform == "android" && !info.locationAuthorized) {
-      wx.showToast({
-        title: '请授予微信位置权限(GPS)',
-        icon: 'none'
-      })
-      return
-    }
-    //检测是否打开gps位置开关
-    if (info.platform == "android" && !info.locationEnabled) {
-      wx.showToast({
-        title: '请打开位置信息(GPS)',
-        icon: 'none'
-      })
-      return
-    }
-    sBluetoothManager.sanDevice();
-  },
-  _OnFoundDevs(devices: WechatMiniprogram.BlueToothDevice[]) {
-    let devicesTemp: WechatMiniprogram.BlueToothDevice[] = new Array(devices.length + 1);
-    let isContainConnected: boolean = false
-    let isConnected = sBluetoothManager.isConnected()
-    if (isConnected) {
-      let connectedDevice = sBluetoothManager.getConnectedDevice()!;
-      devicesTemp[0] = connectedDevice;
-      for (let index = 0; index < devices.length; index++) {
-        devicesTemp[index + 1] = devices[index]
-        if (connectedDevice.deviceId == devices[index].deviceId) {
-          isContainConnected = true
-        }
-      }
-    }
-
-    var devicesShow = new Array();
-
-    if (!isContainConnected && isConnected) {
-      if (this.data.nameText.length > 0) {
-        for(let i = 0; i < devicesTemp.length; i++){
-          let tmp = devicesTemp[i]
-          let upName = tmp.name.toUpperCase()
-          let upNameText = this.data.nameText.toUpperCase()
-          if (upName.indexOf(upNameText)>=0) {
-              devicesShow.push(tmp)
-          }
-        }
-        this.setData({
-          deviceList: devicesShow
+    let connectedDevices = sBluetoothManager.getConnectedDevice();
+    if (connectedDevices != null && connectedDevices.length > 0) {//已连接设备
+      if (!sBluetoothManager.isConnected(device)) {
+        wx.showToast({
+          title: '请先断开已连接的设备',
+          icon: 'none'
         })
-      }else{
-        this.setData({
-          deviceList: devicesTemp
+        return;
+      } else {
+        wx.showModal({
+          title: '提示',
+          content: '是否要断开该设备',
+          success(res) {
+            if (res.confirm) {
+              sBluetoothManager.disconnectDevice(device)
+            }
+          }
         })
       }
     } else {
-      if (this.data.nameText.length > 0) {
-        for(let i = 0; i < devices.length; i++){
-          let tmp = devices[i]
-          let upName = tmp.name.toUpperCase()
-          let upNameText = this.data.nameText.toUpperCase()
-          if (upName.indexOf(upNameText)>=0) {
-              devicesShow.push(tmp)
-          }
-        }
-        this.setData({
-          deviceList: devicesShow
-        })
-      }else{
-        this.setData({
-          deviceList: devices
-        })
-      }
+      wx.showLoading({
+        title: '连接中',
+      })
+      logv(" 连接中", device);
+      sBluetoothManager.connectDevice(device)
     }
   },
-  _onDevDisconnect: function (result: WechatMiniprogram.BlueToothDevice) {
+
+  onRefresh() {
+    if (this._freshing) return;
+    this._freshing = true
+    if (!this.data.triggered) {
+      this.setData({
+        triggered: true
+      })
+    }//保证刷新状态下，triggered为true  
+    sBluetoothManager.sanDevice();
+    setTimeout(() => {
+      this.setData({
+        triggered: false,//触发onRestore，关闭刷新图标  
+      })
+      this._freshing = false
+    }, 1500);
+  },
+  onSetFilter() {
+    wx.showModal({
+      title: "设备过滤条件",
+      editable: true,
+      content: this.data.filterDevName,
+      success: (res) => {
+        if (res.confirm) {
+          this.setData({
+            filterDevName: res.content
+          })
+          this._filterDevName(this._foundSrcDevlist)
+          wx.setStorageSync('filterDevName', res.content)
+        } else if (res.cancel) {
+
+        }
+      }
+    })
+  },
+  _onBluetoothAdapter(_availableBluetooth: boolean, _btAdapterInfo?: BTAdapter.BTAdapterInfo) {
+  },
+  _onLocation(_availableLocation: boolean, _locationAdapterInfo?: BTAdapter.LocationAdapterInfo) {
+  },
+  _onScanStart() {
+    this.setData({ isScaning: true })
+  },
+  _onScanFailed(_err: BTBean.BluetoothError) {
+    this.setData({ isScaning: false })
+  },
+  _onScanFinish() {
+    this.setData({ isScaning: false })
+  },
+  lastUpDateTime: 0,
+  _OnFoundDevs(devices: BTBean.BluetoothDevice[]) {
+    const time = new Date().getTime()
+    if (time - this.lastUpDateTime < 750) {
+      return
+    }
+    this.lastUpDateTime = time
+    let devicesTemp: BTBean.BluetoothDevice[];
+    devicesTemp = devices.sort(function (a, b) { return b.RSSI - a.RSSI })
+    this._foundSrcDevlist = devicesTemp
+    this._filterDevName(this._foundSrcDevlist)
+  },
+  _filterDevName(devs: BTBean.BluetoothDevice[]) {
+    const filterDevName = this.data.filterDevName.toLowerCase()
+    const tempList = new Array()
+    const connectedDevices = sBluetoothManager.getConnectedDevice();
+    if (connectedDevices != null) {
+      connectedDevices.forEach(element => {
+        if (element.name && element.name.toLowerCase().includes(filterDevName)) {
+          tempList.push(element)
+        }
+      })
+    }
+    devs.forEach(e => {
+      const devName = e.name?.toLowerCase()
+      const isConnected = sBluetoothManager.isConnected(e.deviceId)//connectedDevices != null && connectedDevices.deviceId === e.deviceId
+      if (e.RSSI <= 0 && devName && devName.includes(filterDevName) && !isConnected) {
+        tempList.push(e)
+      }
+    })
+    this.setData({ scanDevices: tempList })
+  },
+  _onDevDisconnect: function (result: BTBean.BluetoothDevice) {
     this.setData({
       connectedDevice: null
     })
   },
-  _onDevConnectFailed: function (result: WechatMiniprogram.BlueToothDevice) {
+  _onDevConnectFailed: function (result: BTBean.BluetoothDevice) {
     this.setData({
       connectedDevice: null
     })
@@ -240,7 +183,7 @@ Page({
       },
     })
   },
-  _onDevConnectSuccess: function (device: WechatMiniprogram.BlueToothDevice) {
+  _onDevConnectSuccess: function (device: BTBean.BluetoothDevice) {
     this.setData({
       connectedDevice: device
     })
@@ -253,7 +196,4 @@ Page({
       },
     })
   },
-
-
-
 })

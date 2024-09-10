@@ -1,67 +1,68 @@
-const TAG = "杰理-OTA"
-function formatLog(msg: string) {
-  let date = new Date()
-  const year = date.getFullYear()
-  const month = date.getMonth() + 1
-  const day = date.getDate()
-  const hour = date.getHours()
-  const minute = date.getMinutes()
-  const second = date.getSeconds()
-  const mill = date.getMilliseconds()
-
-  let timeString = `${[year, month, day].map(formatNumber).join('/')} ${[hour, minute, second, mill].map(formatNumber).join(':')}`
-
-  return timeString + ":" + TAG + "-->" + msg;
-}
-const formatNumber = (n: any) => {
-  n = n.toString()
-  return n[1] ? n : `0${n}`
+const TAG = "杰理-OTA-App"
+var logGrade: number = 1;
+var logger: Logger | undefined;
+export interface Logger {
+  logv: (tag: string, ...args: any[]) => void
+  logd: (tag: string, ...args: any[]) => void
+  logi: (tag: string, ...args: any[]) => void
+  logw: (tag: string, ...args: any[]) => void
+  loge: (tag: string, ...args: any[]) => void
 }
 export function setLogGrade(grade: number) {
   logGrade = grade
 }
-export function logGroup(label: string) {
-  console.group(label);
+export function setLogger(log: Logger) {
+  logger = log
 }
-export function logGroupEnd() {
-  console.groupEnd();
-}
-var logGrade: number = 1;
-export function logv(msg: string) {
+
+export function logv(...args: any[]) {
   if (logGrade <= 1) {
-    console.log(formatLog(msg));
+    if (logger != undefined) {
+      logger.logv(TAG, ...args);
+    }
   }
 }
-export function logd(msg: string) {
+export function logd(...args: any[]) {
   if (logGrade <= 2) {
-    console.debug(formatLog(msg));
+    if (logger != undefined) {
+      logger.logd(TAG, ...args);
+    }
   }
 }
-export function logi(msg: string) {
+export function logi(...args: any[]) {
   if (logGrade <= 3) {
-    console.info(formatLog(msg));
+    if (logger != undefined) {
+      logger.logi(TAG, ...args);
+    }
   }
 }
-export function logw(msg: string) {
+export function logw(...args: any[]) {
   if (logGrade <= 4) {
-    console.warn(formatLog(msg));
+    if (logger != undefined) {
+      logger.logw(TAG, ...args);
+    }
   }
 }
-export function loge(msg: string) {
+export function loge(...args: any[]) {
   if (logGrade <= 5) {
-    console.error(formatLog(msg));
+    if (logger != undefined) {
+      logger.loge(TAG, ...args);
+    }
   }
 }
 
 /** arraybuffer 转字符串*/
-export function ab2hex(buffer: ArrayBuffer) {
-  const hexArr = Array.prototype.map.call(
-    new Uint8Array(buffer),
-    function (bit) {
-      return ('00' + bit.toString(16)).slice(-2)
-    }
-  )
-  return hexArr.join('')
+export function ab2hex(buffer?: ArrayBuffer) {
+  if (buffer) {
+    const hexArr = Array.prototype.map.call(
+      new Uint8Array(buffer),
+      function (bit) {
+        return ('00' + bit.toString(16)).slice(-2)
+      }
+    )
+    return hexArr.join('')
+  }
+  return ''
 }
 
 /** 16进制数据转蓝牙地址 */

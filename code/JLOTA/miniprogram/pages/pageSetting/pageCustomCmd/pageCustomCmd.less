@@ -1,0 +1,127 @@
+/* pages/pageSetting/pageCustomCmd/pageCustomCmd.wxss */
+page {
+    display: flex;
+    flex-direction: column;
+}
+
+.contain {
+    display: flex;
+    flex-direction: column;
+}
+
+.contain .view_part {
+    display: flex;
+    flex-direction: column;
+    margin-top: 24rpx;
+}
+
+.view_part .top {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.view_part .top .name {
+    margin-left: 24rpx;
+    height: 48rpx;
+}
+
+.view_part .top .ic_logo {
+    height: 48rpx;
+    width: 48rpx;
+    margin-right: 24rpx;
+}
+
+.view_part .time {
+    display: flex;
+    flex-direction: row;
+}
+
+.view_part .time .tip {
+    margin-left: 24rpx;
+    color: rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+}
+
+.view_part .time .value {
+    margin-left: 24rpx;
+
+}
+
+.view_part .bottom {
+    display: flex;
+    flex-direction: row;
+}
+
+.view_part .bottom .tip {
+    margin-left: 24rpx;
+    color: rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+}
+
+.view_part .bottom .value {
+    margin-left: 24rpx;
+}
+
+.dialog_send {
+    position: absolute;
+    z-index: 100;
+    background-color: rgba(0, 0, 0, 0.5);
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.dialog_send .view_contain {
+    background-color: white;
+    width: 80vw;
+    padding: 36rpx;
+}
+
+.dialog_send .top {
+    display: flex;
+    flex-direction: row;
+    height: 72rpx;
+    justify-content: space-between;
+}
+
+.dialog_send .top .name {
+    color: #242424;
+    font-size: 40rpx;
+    line-height: 72rpx;
+    margin: 0rpx 16rpx;
+}
+
+.dialog_send .bottom {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.dialog_send .bt1 {
+    color: #1296db;
+    font-size: 36rpx;
+}
+.dialog_send .center  {
+    display: flex;
+    flex-direction: column;
+}
+.dialog_send .center .data_item {
+    display: flex;
+    flex-direction: row;
+}
+
+.dialog_send .center .data_item .v_input {
+    width: 0;
+    flex: 1;
+    border-bottom: 3rpx solid #0d0d0e;
+}
+
+.dialog_send .center .data_item .ic_delete {
+    height: 48rpx;
+    width: 48rpx;
+}
+

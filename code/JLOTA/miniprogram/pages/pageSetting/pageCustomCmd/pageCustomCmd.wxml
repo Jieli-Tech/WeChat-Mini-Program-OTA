@@ -1,0 +1,57 @@
+<!--pages/pageSetting/pageCustomCmd/pageCustomCmd.wxml-->
+<view class="contain">
+    <view class="view_part">
+        <view class="top">
+            <text class="name">手机->设备</text>
+            <image class="ic_logo" catch:tap="onShowSendDialog" src="../../../images/icon_send.png" mode="scaleToFill" />
+        </view>
+        <view class="time">
+            <text class="tip">Update time</text>
+            <text class="value"> {{sendDataUpdateTime}}</text>
+        </view>
+        <view class="bottom">
+            <text class="tip">Value:(0x)</text>
+            <text selectable="true" class="value">{{sendDataHexStr}}</text>
+        </view>
+    </view>
+    <view class="view_part">
+        <view class="top">
+            <text class="name">设备->手机</text>
+            <image class="ic_logo" src="../../../images/icon_receive.png" mode="scaleToFill" />
+        </view>
+        <view class="time">
+            <text class="tip">Update time</text>
+            <text class="value"> {{receiveDataUpdateTime}}</text>
+        </view>
+        <view class="bottom">
+            <text class="tip">Value:(0x)</text>
+            <text selectable="true" class="value">{{receiveDataHexStr}}</text>
+        </view>
+    </view>
+</view>
+<!-- 发送自定义命令Dialog -->
+<view class="dialog_send" wx:if="{{isShowSendDialog}}">
+    <view class="view_contain">
+        <view class="top">
+            <text class="name">发送命令</text>
+        </view>
+        <view class="center">
+            <scroll-view style="margin-bottom:32rpx;">
+                <view wx:for="{{dataObjArr}}" class="data_item">
+                    <input bindinput="onInputDataObj" class="v_input" data-index="{{index}}" type="text" value="{{item.value}}" placeholder="写入数据" />
+                    <picker mode="selector" bindchange="onDataObTypePickerChange" data-index="{{index}}" value="{{item.dataType}}" range="{{dataType}}">
+                        <view class="picker">
+                            {{dataType[item.dataType]}} ▼
+                        </view>
+                    </picker>
+                    <image catch:tap="onDeleteDataObj" data-index="{{index}}" class="ic_delete" src="../../../images/icon_delete.png" mode="scaleToFill" />
+                </view>
+            </scroll-view>
+            <text class="bt1" style="margin-bottom:32rpx;" catch:tap="onAddDataType">添加类型值</text>
+        </view>
+        <view class="bottom">
+            <text class="bt1" catch:tap="onHideSendDialog">取消</text>
+            <text class="bt1" catch:tap="onSendData"> 发送</text>
+        </view>
+    </view>
+</view>

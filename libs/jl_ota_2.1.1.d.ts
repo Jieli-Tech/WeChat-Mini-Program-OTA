@@ -1,4 +1,5 @@
-declare function setLogGrade(grade: number): void;
+/****杰理OTA库 version 2.1.1 ****/
+import { RcspImpl, Device } from './jl_rcsp_ota_2.1.1.js';
 
 /** OTA接口 */
 interface IOTAOp {
@@ -133,6 +134,8 @@ declare class OTAConfig {
 /** 回连信息*/
 declare class ReConnectMsg {
     isSupportNewReconnectADV?: boolean;
+    /** rcsp协议中的BLE_Mac地址  */
+    deviceBleMac?: string;
     copy(): ReConnectMsg;
     toString(): string;
 }
@@ -148,18 +151,18 @@ declare class OTAImpl {
     static readonly WAITING_DEVICE_OFFLINE_TIMEOUT: number;
     static readonly RECONNECT_DEVICE_DELAY = 1000;
     static readonly RECONNECT_DEVICE_TIMEOUT: number;
-    private mIOTAOp;
-    private mUpgradeCbHelper;
-    private mUpgradeDataBuf;
-    private mTotalOTaSize;
-    private mCurrentOtaSize;
-    protected mOTAConfig: OTAConfig | null;
-    private mReConnectMsg;
-    private mDeviceUpgradeInfo;
-    /** 定时器 */
-    private mTaskTimer;
-    private mReconnectTimer;
-    private mWaitDeviceOffLineTimer;
+    private _IOTAOp;
+    private _UpgradeCbHelper;
+    private _UpgradeDataBuf;
+    private _TotalOTaSize;
+    private _CurrentOtaSize;
+    private _OTAConfig;
+    private _ReConnectMsg;
+    private _DeviceUpgradeInfo;
+    private _OTADeviceBleMac;
+    private _TaskTimer;
+    private _ReconnectTimer;
+    private _WaitDeviceOffLineTimer;
     constructor(iOTAOp: IOTAOp);
     release(): void;
     /** isOTA 是否正在OTA*/
@@ -179,6 +182,10 @@ declare class OTAImpl {
     notifyUpgradeSize(totalSize: number, currentSize: number): void;
     /** 设备获取升级文件块  */
     gainFileBlock(offset: number, len: number): void;
+    /**
+     * 设置RCSP的BLEMac地址
+     */
+    setDeviceBLEMac(deviceBLEMac: string | undefined): void;
     private _setOTAConfig;
     /** 读取升级标识  */
     private _upgradePrePare;
@@ -217,4 +224,37 @@ declare class OTAImpl {
     private _getUpgradeTypeByCode;
 }
 
-export { DeviceUpgradeInfo, FileOffset, IOTAOp, OTAConfig, OTAError, OTAImpl, OnResultCallback, OnUpgradeCallback, ReConnectMsg, UpgradeType, getErrorDesc, setLogGrade };
+interface Logger {
+    logv: (tag: string, ...args: any[]) => void;
+    logd: (tag: string, ...args: any[]) => void;
+    logi: (tag: string, ...args: any[]) => void;
+    logw: (tag: string, ...args: any[]) => void;
+    loge: (tag: string, ...args: any[]) => void;
+}
+declare function setLogGrade(grade: number): void;
+declare function setLogger(log: Logger): void;
+declare function logv(...args: any[]): void;
+declare function logd(...args: any[]): void;
+declare function logi(...args: any[]): void;
+declare function logw(...args: any[]): void;
+declare function loge(...args: any[]): void;
+/** arraybuffer 转字符串*/
+declare function ab2hex(buffer?: ArrayBuffer): string;
+
+declare class RcspOTAManager {
+    private _RcspOpImpl;
+    private _OTAImpl;
+    private _RcspOTA;
+    constructor(rcspOpImpl: RcspImpl);
+    /**
+     * releas
+     */
+    release(): void;
+    startOTA(config: OTAConfig, callback: OnUpgradeCallback): void;
+    cancelOTA(): void;
+    isOTA(): boolean;
+    getCurrentOTADevice(): Device | null;
+    updateRcspOpImpl(rcspOpImpl: RcspImpl): void;
+}
+
+export { FileOffset, IOTAOp, OTAConfig, OTAError, OTAImpl, OnResultCallback, OnUpgradeCallback, RcspOTAManager, ReConnectMsg, UpgradeType, ab2hex, getErrorDesc, logd, loge, logi, logv, logw, setLogGrade, setLogger };

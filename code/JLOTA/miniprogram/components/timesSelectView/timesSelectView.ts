@@ -35,20 +35,17 @@ Component({
    */
   methods: {
     onInputTestNumber(e: { detail: { value: any } }){
-      console.log(e.detail.value)
       this.setData({
         mTestNumber:e.detail.value
       })
     },
 
     onSliderChanged(e:any){
-      console.log(e.detail.value)
       this.setData({
         mMtuNumber:e.detail.value
       })
     },
     onSliderchanging(e:any){
-      //console.log(e.detail.value)
       this.setData({
         mMtuNumber:e.detail.value
       })

@@ -1,18 +1,15 @@
-import { ab2hex } from "./util";
-import { logGroup, logGroupEnd, logv, logd, logi, logw, loge } from "./log";
+import { ab2hex, hexToBytes } from "./util";
+import { logv, logd, logi, logw, loge } from "./log";
 
 /** 处理收到数据 */
 export var BleDataHandler = {
   callbacks: Array<BleDataCallback>(),
   init() {
     wx.onBLECharacteristicValueChange(res => {
-      loge("收到数据 serviceId uuid:"+res.serviceId +"  characteristicId: "+res.characteristicId)
-        logv("收到数据:"+ab2hex(res.value))
+      logv("收到数据 serviceId uuid:" + res.serviceId + "  characteristicId: " + res.characteristicId)
+      logv("收到数据:" + ab2hex(res.value))
       this._handlerData(res);
     })
-    // wx.onBLEConnectionStateChange(res => {
-    //   this._handlerConnectState(res)
-    // })
   },
   addCallbacks(callback: BleDataCallback) {
     if (this.callbacks.indexOf(callback) == -1) {
@@ -27,7 +24,7 @@ export var BleDataHandler = {
   },
   _handlerData(res: WechatMiniprogram.OnBLECharacteristicValueChangeCallbackResult) {
     this._doAction({
-      action: function (c) {
+      action: (c) => {
         if (c.onReceiveData) {
           c.onReceiveData(res);
         }
@@ -36,7 +33,7 @@ export var BleDataHandler = {
   },
   _handlerConnectState(res: WechatMiniprogram.OnBLEConnectionStateChangeCallbackResult) {
     this._doAction({
-      action: function (c) {
+      action: (c) => {
         if (c.onConnectStateChange) {
           c.onConnectStateChange(res);
         }
@@ -62,15 +59,16 @@ export var BleSendDataHandler = {
   sendInfoArray: new Array<SendDataTask>(),
   retryNum: 0,
   setMtu(deviceId: string, mtu: number) {
-    console.log('--->'+deviceId+':'+mtu)
     this.mtuMap.set(deviceId, mtu)
   },
   sendData(deviceId: string, serviceId: string, characteristicId: string, data: Uint8Array): boolean {
     const mtu = this.mtuMap.get(deviceId)
     let realMTU = 20;
-    if (mtu != undefined) realMTU = mtu - 3
-    console.log('realMTU --->'+realMTU)
-
+    if (mtu != undefined && mtu > 512) {
+      realMTU = 509
+    } else {
+      if (mtu != undefined) realMTU = mtu - 3
+    }
     const dataLen = data.byteLength;
     const blockCount = Math.floor(dataLen / realMTU);
     let ret = false;
@@ -107,21 +105,21 @@ export var BleSendDataHandler = {
       callback.complete?.()
       return
     }
-    this._sendData(dataInfo,callback);
+    this._sendData(dataInfo, callback);
   },
-  _sendData(sendDataTask: SendDataTask,callback: { complete?: Function }): boolean {
+  _sendData(sendDataTask: SendDataTask, callback: { complete?: Function }): boolean {
     // 发送失败重发三次
-    logw("开始发送数据：->" + ab2hex(sendDataTask.data.buffer) + " serviceId:"+sendDataTask.serviceId)
+    logv("开始发送数据：->" + ab2hex(sendDataTask.data.buffer) + " serviceId:" + sendDataTask.serviceId)
     wx.writeBLECharacteristicValue({
       deviceId: sendDataTask.deviceId,
-      serviceId: sendDataTask.serviceId,
-      characteristicId: sendDataTask.characteristicId,
+      serviceId: sendDataTask.serviceId.toLocaleUpperCase(),
+      characteristicId: sendDataTask.characteristicId.toLocaleUpperCase(),
       value: sendDataTask.data.buffer,
       fail: (err) => {
         this.retryNum++
-        if (this.retryNum >= 3) {
+        if (this.retryNum <= 3) {
           logw("发送失败，重发数据：->" + "\terr=" + JSON.stringify(err) + " retryNum = " + this.retryNum)
-          this._sendData(sendDataTask,callback)
+          this._sendData(sendDataTask, callback)
         } else {
           this.retryNum = 0;
           callback.complete?.()
@@ -129,9 +127,9 @@ export var BleSendDataHandler = {
         loge("发送数据失败：->" + "\terr=" + JSON.stringify(err))
       },
       success: () => {
-         logw("发送数据成功：->" + ab2hex(sendDataTask.data.buffer) + " serviceId:"+sendDataTask.serviceId)
-         this.retryNum = 0;
-         callback.complete?.()
+        logv("发送数据成功：->" + ab2hex(sendDataTask.data.buffer) + " serviceId:" + sendDataTask.serviceId)
+        this.retryNum = 0;
+        callback.complete?.()
       }
     })
     return true

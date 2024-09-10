@@ -41,8 +41,8 @@
     <view wx:if="{{pStatus==0 || pStatus==1}}" class="view_3">(升级过程中，请保持蓝牙和网络打开状态)</view>
     <view wx:if="{{pStatus==2}}" class="view_3">正在回连设备...</view>
 
-    <image wx:if="{{(pStatus==3 || pStatus==4)&&(pOtaResult == 0)}}" class="image_0" src="/images/icon_success_48_nol@2x.png" mode="aspectFit"/>
-    <image wx:if="{{(pStatus==3 || pStatus==4)&&(pOtaResult != 0)}}" class="image_0" src="/images/icon_fail_48_nol@2x.png" mode="aspectFit"/>
+    <image wx:if="{{(pStatus==3 || pStatus==4)&&(pOtaResult == 0)}}" class="image_0" src="/images/icon_success_48_nol.png" mode="aspectFit"/>
+    <image wx:if="{{(pStatus==3 || pStatus==4)&&(pOtaResult != 0)}}" class="image_0" src="/images/icon_fail_48_nol.png" mode="aspectFit"/>
 
     <view wx:if="{{(pStatus==3 || pStatus==4)&&(pOtaResult==0)}}" class="view_0">升级成功</view>
     <view wx:if="{{(pStatus==3 || pStatus==4)&&(pOtaResult!=0)}}" class="view_0">升级失败</view>

@@ -1,40 +1,37 @@
 // pages/pageUpdate/pageUpdate.ts
 
 import { IAppOption } from "../../../typings/index"
-import { BluetoothEventCallback, BluetoothManager } from "../../lib/bluetoothManager"
-import { OTAConfig, ReConnectMsg, UpgradeType } from "../../lib/rcsp-protocol/jl-ota/jl_ota_2.0.0"
+import { BTBean } from "../../lib/bluetooth"
+import { BluetoothEventCallback, BluetoothOTAManager } from "../../lib/bluetoothOTAManager"
+import { OTAConfig, ReConnectMsg, UpgradeType } from "../../lib/jl_lib/jl_ota_2.1.1"
+import { loge, logv } from "../../lib/log"
+import { UpgradeFileUtil } from "../../lib/upgradeFileUtil"
 
 const app = getApp<IAppOption>()
-var sBluetoothManager: BluetoothManager
+var sBluetoothManager: BluetoothOTAManager
 
 Page({
 
   /**
-   * 页面的初始数据
+   * 页面的初始数据 
    */
   data: {
-    isBleConnect:false,
+    isBleConnect: false,
+    fileArray: new Array(),
+    fileIndex: -1,
 
-    fileArray:<any>[],
-    fileIndex:-1,
-    // fileInfo :{id:0,fileItem:<any>null,crc:<any>null},
-
-    fileOTA: <any>null,
     fileSize: 0,
-    fileCrc: 0,
     showOta: false,
 
-    isShowProgress:false,     //展示OTA升级界面
-    mValue:0,                 //进度 0-100
-    mNumber:0,                //完成次数
-    mTimes:0,                 //测试总次数
-    mOtaFile:"otaUpdate.ufw", //OTA文件名
-    mFailReason:"ota Fail",   //失败原因 
-    mOtaResult:0,             //0:成功 1:失败
-    mStatus:0,                 //0:检验中 1:升级中 2:回连设备 3:升级成功 4:升级失败
+    isShowProgress: false,     //展示OTA升级界面
+    mValue: 0,                 //进度 0-100
+    mOtaFile: "otaUpdate.ufw", //OTA文件名
+    mFailReason: "ota Fail",   //失败原因 
+    mOtaResult: 0,             //0:成功 1:失败
+    mStatus: 0,                 //0:检验中 1:升级中 2:回连设备 3:升级成功 4:升级失败
 
-    isShowLoading:false,
-    mLoadingText:"加载升级文件"
+    isShowLoading: false,
+    mLoadingText: "加载升级文件"
   },
   upgradeData: new Uint8Array(0),
 
@@ -44,31 +41,28 @@ Page({
   onLoad() {
     sBluetoothManager = app.globalData.bluetoothManager
     const bluetoothEventCallback = new BluetoothEventCallback();
-      /** 设备断开 */
-    bluetoothEventCallback.onDevStatusDisconnect = (dev: WechatMiniprogram.BlueToothDevice)=> { 
-      this.setData({
-        isBleConnect:false
-      })
+    /** 设备断开 */
+    bluetoothEventCallback.onDevStatusDisconnect = (dev: BTBean.BluetoothDevice) => {
+      this._checkIsConnected()
     };
     /** 设备连接失败 */
-    bluetoothEventCallback.onDevStatusFailed = (dev: WechatMiniprogram.BlueToothDevice)=> {
-      this.setData({
-        isBleConnect:false
-      })
-     };
+    bluetoothEventCallback.onDevStatusFailed = (dev: BTBean.BluetoothDevice) => {
+      this._checkIsConnected()
+    };
     /** 设备连接成功*/
-    bluetoothEventCallback.onDevStatusSuccess = (dev: WechatMiniprogram.BlueToothDevice)=> {
-      this.setData({
-        isBleConnect:true
-      })
-     };
+    bluetoothEventCallback.onDevStatusSuccess = (dev: BTBean.BluetoothDevice) => {
+      this._checkIsConnected()
+    };
     sBluetoothManager.addBluetoothEventCallback(bluetoothEventCallback)
-  },
-  onShow(){
-    var vl = sBluetoothManager.isConnected()
-    this.setData({
-      isBleConnect:vl
+    this._onUpgradeFileInfoList(UpgradeFileUtil.getUpgradeFileInfos())
+    UpgradeFileUtil.setListener({
+      onUpgradeFileInfoList: (infoList: any[]) => {
+        this._onUpgradeFileInfoList(infoList)
+      }
     })
+  },
+  onShow() {
+    this._checkIsConnected()
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
         selected: 1,
@@ -78,48 +72,78 @@ Page({
     }
   },
 
-  showLoadingView: function() {
+  showLoadingView: function () {
     this.setData({
-      isShowLoading:true
+      isShowLoading: true
     })
   },
 
-  dismissLoadingView: function() {
+  dismissLoadingView: function () {
     this.setData({
-      isShowLoading:false
+      isShowLoading: false
     })
   },
 
-  onAddOTAFile: function() {
-
-    // if (!this.data.isBleConnect) {
-    //   wx.showToast({
-    //     title: '请先连接的设备',
-    //     icon: 'none'
-    //   })
-    //   return;
-    // }
-
-    console.log("读取文件...")
+  onAddOTAFile: function () {
+    logv("读取文件...")
     wx.chooseMessageFile({
       count: 10,
       type: 'file',
       success: res => {
-        var myFileArray = this.data.fileArray
-
-        for (var i = 0; i<res.tempFiles.length; i++) {
-          let file = res.tempFiles[i]
-          console.log("--->"+file.name)
-          myFileArray.push({id:myFileArray.length,fileItem:file,crc:0})
+        const addFileArray = res.tempFiles
+        if (addFileArray.length > 1) {//多个文件跳过重命名
+          const infos = new Array()
+          for (let index = 0; index < addFileArray.length; index++) {
+            const element = addFileArray[index];
+            infos.push({ fileName: element.name, fileSrcPath: element.path, fileSize: element.size })
+          }
+          UpgradeFileUtil.addUpgradeFiles(infos).then((res)=>{
+            wx.showToast({
+              title: '导入成功',
+              icon: 'success'
+            })
+          }).catch((error) => {
+            if (error == 1300202) {
+              wx.showToast({
+                title: '导入失败，小程序剩余使用空间不足(上限200MB)',
+                icon: 'none'
+              })
+            }
+          })
+        } else if (addFileArray.length == 1) {//单个文件重命名
+          const file = addFileArray[0]
+          wx.showModal({
+            title: "请输入文件名",
+            content: file.name,
+            editable: true,
+            success: (res) => {
+              if (res.confirm == true) {
+                UpgradeFileUtil.addUpgradeFile(res.content, file.path, file.size).then((res) => {
+                  wx.showToast({
+                    title: '导入成功',
+                    icon: 'success'
+                  })
+                }).catch((error) => {
+                  if (error == 1300202) {
+                    wx.showToast({
+                      title: '导入失败，小程序剩余使用空间不足(上限200MB)',
+                      icon: 'none'
+                    })
+                  }
+                })
+              } else if (res.cancel == true) {
+                wx.showToast({
+                  title: '取消保存',
+                  icon: 'none'
+                })
+              }
+            }
+          })
         }
-        this.setData({
-          fileArray:myFileArray
-        })
       },
       fail: e => {
-        console.error(e)
+        loge(e)
         this.dismissLoadingView()
-
         wx.hideLoading({
           success: () => {
             wx.showToast({
@@ -131,88 +155,99 @@ Page({
       }
     })
   },
-
-  onSelectedFile: function(e:any){
+  onLongTapFile(e: WechatMiniprogram.CustomEvent) {
+    const index = e.currentTarget.dataset.index
+    wx.showActionSheet({
+      itemList: ['删除文件', '转发文件到聊天'],
+      success: (res) => {
+        const file = this.data.fileArray[index]
+        if (res.tapIndex === 0) {
+          if (this.data.fileIndex == index) {
+            this.setData({
+              fileIndex: -1,
+              mOtaFile: "",
+            })
+          }
+          UpgradeFileUtil.removeUpgradeFile(file)
+        } else if (res.tapIndex === 1) {
+          wx.shareFileMessage({
+            filePath: file.filePath,
+            fileName: file.fileName,
+            success: (res) => {
+              // wx.showToast({ title: "转发成功" })
+            }, fail: (res) => {
+              wx.showToast({ title: "转发失败,msg:" + res.errMsg })
+            }
+          })
+        }
+      }
+    })
+  },
+  onSelectedFile: function (e: any) {
     if (this.data.fileIndex == e.currentTarget.dataset.index) {
       this.setData({
         fileIndex: -1,
-        fileOTA: null,
-        fileSize: 0,
-        fileCrc:  0,
         mOtaFile: "",
       })
       return;
     }
-    
-    console.log("File"+e.currentTarget.dataset.index)
-    let oneFile = this.data.fileArray[e.currentTarget.dataset.index]
-    let fileContext = oneFile.fileItem
-
+    const selectedFile = this.data.fileArray[e.currentTarget.dataset.index]
     this.showLoadingView()
-
-        let fs = wx.getFileSystemManager()
-        let path = fileContext.path;
-        let fd = fs.openSync({
-          filePath: path
-        })
-        let uint8 = new Uint8Array(fileContext.size);
-
-        fs.read({
-          fd: fd,
-          arrayBuffer: uint8.buffer,
-          length: fileContext.size,
-          success: _res => {
-            let tmp_crc = 0;
-            uint8.forEach(it => {
-              tmp_crc += it;
-            })
-            console.log(fileContext)
-          
-            this.upgradeData = uint8
-            console.log("------------读取文件成功------------")
-
-           setTimeout(() => {
+    const fs = wx.getFileSystemManager()
+    try {
+      const fd = fs.openSync({
+        filePath: selectedFile.filePath
+      })
+      const uint8 = new Uint8Array(selectedFile.fileSize);
+      fs.read({
+        fd: fd,
+        arrayBuffer: uint8.buffer,
+        length: selectedFile.fileSize,
+        success: _res => {
+          this.upgradeData = uint8
+          logv("------------读取文件成功------------")
+          setTimeout(() => {
             this.dismissLoadingView()
             wx.showToast({
               title: '加载成功',
               icon: 'none'
             })
-           }, 200);
-            fs.closeSync({ fd: fd })
-          },
-          fail: _res => {
-            this.dismissLoadingView()
-            wx.showToast({
-              title: '加载失败',
-              icon: 'none'
-            })
-            fs.closeSync({ fd: fd })
-          }
+          }, 200);
+          fs.closeSync({ fd: fd })
+        },
+        fail: _res => {
+          this.dismissLoadingView()
+          wx.showToast({
+            title: '加载失败',
+            icon: 'none'
+          })
+          fs.closeSync({ fd: fd })
+        }
+      })
+    } catch (error) {
+      this.dismissLoadingView()
+      wx.showToast({
+        title: '文件丢失',
+        icon: 'none'
+      })
+      if (this.data.fileIndex == e.currentTarget.dataset.index) {
+        this.setData({
+          fileIndex: -1,
+          mOtaFile: "",
         })
+      }
+      UpgradeFileUtil.removeUpgradeFile(selectedFile)
+      logv("error", error);
+      return
+    }
 
-    this.upgradeData = oneFile.fileData
+
     this.setData({
       fileIndex: e.currentTarget.dataset.index,
-      fileOTA: fileContext,
-      fileSize: fileContext.size,
-      fileCrc:  oneFile.crc,
-      mOtaFile: fileContext.name,
+      mOtaFile: selectedFile.fileName,
     })
   },
-
-  onUpdate: function(){
-
-    // console.log("按钮升级")
-    // this.setData({
-    //   isShowProgress : true,
-    //   mValue:60,
-    //   mStatus:0,
-    //   mNumber:10,                //完成次数
-    //   mTimes:10
-    // })
-    // return
-
-    console.log("按钮升级")
+  onUpdate: function () {
     if (!this.data.isBleConnect) {
       wx.showToast({
         title: '请先连接的设备',
@@ -220,7 +255,6 @@ Page({
       })
       return;
     }
-
     if (this.data.fileIndex == -1) {
       wx.showToast({
         title: '请先选择升级文件',
@@ -228,97 +262,131 @@ Page({
       })
       return;
     }
-
-
-    console.log("按钮升级")
     this.setData({
-      isShowProgress : true
+      isShowProgress: true
     })
 
     /*--- 开始执行OTA升级 ---*/
     const otaConfig: OTAConfig = new OTAConfig()
     otaConfig.isSupportNewRebootWay = true
     otaConfig.updateFileData = this.upgradeData
-    console.log("upgradeData size: " + this.upgradeData.length);
-    sBluetoothManager.startOTA(otaConfig,{
-      onStartOTA: () => {
-        this.setData({
-          isShowProgress : true,
-          mStatus:0
-        })
-        setTimeout(() => {
-          if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-            this.getTabBar().setData({
-              enable:false //todo 暂时性处理，应该让弹窗遮罩罩住整个小程序的
-            })
-          }
-        }, 100);
-      },
-      onNeedReconnect: (reConnectMsg: ReConnectMsg) => {
-        this.setData({
-          mValue : 0,
-          mStatus: 2
-        })
-      },
-      onProgress: (type: UpgradeType, progress: number) => {
-        if (type == UpgradeType.UPGRADE_TYPE_CHECK_FILE) {
+    logv("upgradeData size: " + this.upgradeData.length);
+    const connectedDevices = sBluetoothManager.getConnectedDevice()
+    if (connectedDevices != null && connectedDevices.length > 0) {
+      const otaDev = connectedDevices[0]
+      sBluetoothManager.startOTA(otaDev, otaConfig, {
+        onStartOTA: () => {
           this.setData({
-            mValue : progress,
+            isShowProgress: true,
             mStatus: 0
           })
-        }
-        if (type == UpgradeType.UPGRADE_TYPE_FIRMWARE) {
+          setTimeout(() => {
+            if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+              this.getTabBar().setData({
+                enable: false //todo 暂时性处理，应该让弹窗遮罩罩住整个小程序的
+              })
+            }
+          }, 100);
+        },
+        onNeedReconnect: (reConnectMsg: ReConnectMsg) => {
           this.setData({
-            mValue : progress,
-            mStatus: 1
+            mValue: 0,
+            mStatus: 2
           })
-        }
-      },
-      onStopOTA: () => {
-        if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-          this.getTabBar().setData({
-            enable:true //todo 暂时性处理，应该让弹窗遮罩罩住整个小程序的
+        },
+        onProgress: (type: UpgradeType, progress: number) => {
+          if (type == UpgradeType.UPGRADE_TYPE_CHECK_FILE) {
+            this.setData({
+              mValue: progress,
+              mStatus: 0
+            })
+          }
+          if (type == UpgradeType.UPGRADE_TYPE_FIRMWARE) {
+            this.setData({
+              mValue: progress,
+              mStatus: 1
+            })
+          }
+        },
+        onStopOTA: () => {
+          if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+            this.getTabBar().setData({
+              enable: true //todo 暂时性处理，应该让弹窗遮罩罩住整个小程序的
+            })
+          }
+          this.setData({
+            mValue: 0,
+            mOtaResult: 0,
+            mStatus: 3
           })
-        }
-        this.setData({
-          mValue : 0,
-          mOtaResult:0,
-          mStatus: 3
-        })
-      },
-      onCancelOTA: () => {
-        if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-          this.getTabBar().setData({
-            enable:true //todo 暂时性处理，应该让弹窗遮罩罩住整个小程序的
+        },
+        onCancelOTA: () => {
+          if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+            this.getTabBar().setData({
+              enable: true //todo 暂时性处理，应该让弹窗遮罩罩住整个小程序的
+            })
+          }
+          this.setData({
+            mValue: 0,
+            mOtaResult: 1,
+            mStatus: 4,
+            mFailReason: "升级被取消."
           })
-        }
-        this.setData({
-          mValue : 0,
-          mOtaResult:1,
-          mStatus: 4,
-          mFailReason:"升级被取消."
-        })
-      },
-      onError: (error: number, message: string) => {
-        if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-          this.getTabBar().setData({
-            enable:true //todo 暂时性处理，应该让弹窗遮罩罩住整个小程序的
+        },
+        onError: (error: number, message: string) => {
+          if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+            this.getTabBar().setData({
+              enable: true //todo 暂时性处理，应该让弹窗遮罩罩住整个小程序的
+            })
+          }
+          this.setData({
+            mValue: 0,
+            mOtaResult: 1,
+            mStatus: 4,
+            mFailReason: message
           })
-        }
-        this.setData({
-          mValue : 0,
-          mOtaResult:1,
-          mStatus: 4,
-          mFailReason:message
-        })
-      },
-    })
+        },
+      })
+    }
   },
-
-  onOtaProgressViewConfirm:function(){
+  onOtaProgressViewConfirm: function () {
     this.setData({
-      isShowProgress : false
+      isShowProgress: false
     })
   },
-
+  _onUpgradeFileInfoList(infoList: any[]) {
+    const tempList = infoList.reverse()
+    tempList.forEach(element => {
+      element.date = this._formatTime(new Date(element.time))
+      element.fileSizeStr = (element.fileSize / (1024 * 1024)).toFixed(2)
+    });
+    this.setData({ fileArray: tempList })
+  },
+  _checkIsConnected() {
+    var isConnected = false
+    const connectedDevices = sBluetoothManager.getConnectedDevice()
+    if (connectedDevices != null && connectedDevices.length > 0) {
+      isConnected = true
+    }
+    this.setData({
+      isBleConnect: isConnected
+    })
+  },
+  _formatTime(date: Date) {
+    const year = date.getFullYear()
+    const month = date.getMonth() + 1
+    const day = date.getDate()
+    const hour = date.getHours()
+    const minute = date.getMinutes()
+    const second = date.getSeconds()
+    return (
+      [year, month, day].map(this._formatNumber).join('/') +
+      ' ' +
+      [hour, minute, second].map(this._formatNumber).join(':')
+    )
+  },
+  _formatNumber(n: number) {
+    const s = n.toString()
+    return s[1] ? s : '0' + s
+  }
 })

@@ -1,0 +1,35 @@
+<!--pages/pageSetting/pageBLEDataSet/pageBLEDataSet.wxml-->
+<!-- Service -->
+<view>
+    <view class="view_part">
+        <view>
+            <text class="name">Service</text>
+            <view class="container">
+                <text class="hint">UUID:</text>
+                <text class="uuid">{{serviceUUID}}</text>
+            </view>
+        </view>
+        <image catch:tap="onEditService" class="btn_edit" src="../../../images/icon_edit.png" mode="scaleToFill" />
+    </view>
+    <view class="view_part">
+        <view>
+            <text class="name">Notify Characteristic</text>
+            <view class="container">
+                <text class="hint">UUID:</text>
+                <text class="uuid">{{notifyCharacteristicUUID}}</text>
+            </view>
+        </view>
+        <image catch:tap="onEditNotifyCharacteristic" class="btn_edit" src="../../../images/icon_edit.png" mode="scaleToFill" />
+    </view>
+    <view class="view_part">
+        <view>
+            <text class="name">Write Characteristic</text>
+            <view class="container">
+                <text class="hint">UUID:</text>
+                <text class="uuid">{{writeCharacteristicUUID}}</text>
+            </view>
+        </view>
+        <image catch:tap="onEditWriteCharacteristic" class="btn_edit" src="../../../images/icon_edit.png" mode="scaleToFill" />
+    </view>
+    <button catch:tap="onSave" style="background-color: white;margin-top: 24rpx;">保存</button>
+</view>

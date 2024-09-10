@@ -1,11 +1,13 @@
 // pages/pageSetting/pageSetting.ts
 
 import { IAppOption } from "../../../typings/index"
-import { BluetoothConfigure, BluetoothManager } from "../../lib/bluetoothManager"
+import { BluetoothConfigure, BluetoothOTAManager } from "../../lib/bluetoothOTAManager"
+import { logv } from "../../lib/log"
+import { getLogGrade, setLogGrade } from "../../lib/logger"
 
 
 const app = getApp<IAppOption>()
-const sBluetoothManager: BluetoothManager = app.globalData.bluetoothManager
+const sBluetoothManager: BluetoothOTAManager = app.globalData.bluetoothManager
 
 Page({
 
@@ -17,6 +19,11 @@ Page({
     mStatusTimesView: 0,//0:测试数量弹窗 1:MTU弹窗
     isHandshake: true,//是否需要认证
     isAutoTest: false,
+    isEnableDebug: false,//是否打开开发调试
+    logViewVisible: false,//显示上传log弹窗
+    logGradeArray: ['logv', 'logd', 'logi', 'logw', 'loge'],
+    logGrade: 0,
+    developMode: false,
     mTestNum: 1,
     mMtuNum: 23,
     mPlatform: 'android',
@@ -26,16 +33,17 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad() {
+    const logGrade = getLogGrade()
+    const sysinfo = wx.getSystemInfoSync()
     this.setData({
       isHandshake: app.globalData.gbIsHandshake,
       isAutoTest: app.globalData.gbIsAutoTest,
       mTestNum: app.globalData.gbTestNum,
-      mMtuNum: app.globalData.gbMtuNum
-    })
-    //'ios' | 'android' | 'windows' | 'mac'
-    const sysinfo = wx.getSystemInfoSync()
-    this.setData({
-      mPlatform: sysinfo.platform
+      mMtuNum: app.globalData.gbMtuNum,
+      isEnableDebug: app.globalData.gbEnableDebug,
+      developMode: app.globalData.gbDevelop,
+      mPlatform: sysinfo.platform,
+      logGrade: (logGrade - 1)
     })
   },
   onShow() {
@@ -45,18 +53,20 @@ Page({
       })
     }
   },
+  // 设备认证
   onIsHandshakeDevice(e: any) {
-    console.log("认证设备：" + e.detail.value)
+    logv("认证设备：" + e.detail.value)
     const isHandshake = e.detail.value
     this.setData({
       isHandshake: isHandshake
     })
     app.globalData.gbIsHandshake = isHandshake;
-    wx.setStorageSync("IsHandshake",isHandshake)
+    wx.setStorageSync("IsHandshake", isHandshake)
     this._saveSettings()
   },
+  //自动化测试
   onIsAutoTestDevice(e: any) {
-    console.log("自动化测试：" + e.detail.value)
+    logv("自动化测试：" + e.detail.value)
     const isAutoTest = e.detail.value
     this.setData({
       isAutoTest: isAutoTest
@@ -68,7 +78,7 @@ Page({
       })
     }
     app.globalData.gbIsAutoTest = isAutoTest;
-    wx.setStorageSync("IsAutoTest",isAutoTest)
+    wx.setStorageSync("IsAutoTest", isAutoTest)
     app.globalData.gbTestNum = this.data.mTestNum;
     app.globalData.gbMtuNum = this.data.mMtuNum;
     this._saveSettings()
@@ -88,19 +98,52 @@ Page({
       isTimesView: !this.data.isTimesView
     })
   },
-
-
-  onShowLogFileView: function () {
-    //展示log界面
-    wx.navigateTo({
-      url: '/pages/logs/logs',
+  onUploadLogFile: function () {
+    this.setData({
+      logViewVisible: true
     })
   },
-
-
-
+  onCancelUploadLog() {
+    this.setData({
+      logViewVisible: false
+    })
+  },
+  onConfirmUploadLog() {
+    this.setData({
+      logViewVisible: false
+    })
+  },
+  //Log文件 
+  onShowLogFileView: function () {
+    logv(" onShowLogFileView");
+    //展示log界面
+    wx.navigateTo({
+      url: '/pages/pageSetting/pageLogFileList/pageLogFileList',
+    })
+  },
+  onLogGradePickerChange(e: WechatMiniprogram.CustomEvent) {
+    logv("onLogGradePickerChange", e.detail);
+    const logGrade: number = Number.parseInt(e.detail.value) + 1
+    this.setData({ logGrade: e.detail.value })
+    wx.setStorageSync("LogGrade", logGrade)
+    setLogGrade(logGrade)
+  },
+  // 开发调试
+  onEnableDebug: function (e: any) {
+    const enableDebug = e.detail.value
+    wx.setStorageSync("IsEnableDebug", enableDebug)
+    setTimeout(() => {
+      wx.setEnableDebug({ enableDebug: enableDebug })
+    }, 100);
+  },
+  // BLE通讯配置
+  onBLEDataSetting: function () {
+    wx.navigateTo({
+      url: '/pages/pageSetting/pageBLEDataSet/pageBLEDataSet',
+    })
+  },
   onTimesSelectTestNumber: function (e: any) {
-    console.log("测试次数：" + e.detail)
+    logv("测试次数：" + e.detail)
     var num = e.detail;
     if (e.detail == 0) num = 1;
 
@@ -111,17 +154,17 @@ Page({
     this._saveSettings()
   },
   onTimesSelectMTU: function (e: any) {
-    console.log("MTU：" + e.detail)
+    logv("MTU：" + e.detail)
     this.setData({
       mMtuNum: e.detail,
       isTimesView: !this.data.isTimesView
     })
     app.globalData.gbMtuNum = e.detail
-    wx.setStorageSync("MtuNum",e.detail)
+    wx.setStorageSync("MtuNum", e.detail)
     this._saveSettings()
   },
   onTimesSelectCancel: function (e: any) {
-    console.log("取消" + e.detail)
+    logv("取消" + e.detail)
     //测试次数
     if (e.detail == 0) {
       this.setData({
@@ -134,6 +177,33 @@ Page({
       this.setData({
         mMtuNum: this.data.mMtuNum,
         isTimesView: !this.data.isTimesView
+      })
+    }
+  },
+  onTestCustomCmd() {
+    wx.navigateTo({
+      url: '/pages/pageSetting/pageCustomCmd/pageCustomCmd',
+    })
+  },
+  onDevelopMode() {
+    if (this.data.developMode) {
+      wx.showToast({ title: "退出开发者模式" })
+      if (this.data.isEnableDebug) {
+        wx.setStorageSync("IsEnableDebug", false)
+        setTimeout(() => {
+          wx.setEnableDebug({ enableDebug: false })
+        }, 100);
+      }
+      wx.setStorageSync("DevelopMode", false)
+      this.setData({
+        developMode: false,
+        isEnableDebug: false,
+      })
+    } else {
+      wx.showToast({ title: "进入开发者模式" })
+      wx.setStorageSync("DevelopMode", true)
+      this.setData({
+        developMode: true
       })
     }
   },
