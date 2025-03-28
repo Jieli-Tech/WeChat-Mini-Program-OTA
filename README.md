@@ -34,5 +34,5 @@
 
  ## 开发文档
 
-sdk使用文档请查看[杰理文档系统-杰理OTA (zh-jieli.com)](https://doc.zh-jieli.com/vue/#/docs/ota)
+sdk使用文档请查看[杰理文档系统-杰理OTA (zh-jieli.com)](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/index.html)
 
