@@ -123,13 +123,13 @@ WeChat-Mini-Program-OTA/
 
 ### 5.1 Using the OTA Library
 
-#### 5.1.1 Using OTAWrapper for OTA[](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/developmentv2/development_desc.html#otawrapperota)
+#### 5.1.1 Using OTAWrapper for OTA
 
 In most cases, OTA functionality can be completed simply by using OTAWrapper. There is no need to implement or use the OTA library's interfaces directly.
 
 **Step 1: Initialize OTAWrapper**
 
-```
+```typescript
 // OTAWrapper initialization
 const otaWrapperOption: OTAWrapperOption = {
     /** Whether authentication is required. If already authenticated at the upper layer, set to false. **/
@@ -171,7 +171,7 @@ this._OTAWrapper = new OTAWrapper(otaWrapperOption)
 
 **Step 2: Listen to Bluetooth connection state and sync with OTAWrapper**
 
-```
+```typescript
 this._bluetoothInstance.addConnectCallback({
     onMTUChange: (dev: any, mtu) => {
         BleSendDataHandler.setMtu(dev.deviceId, mtu)
@@ -194,7 +194,7 @@ this._bluetoothInstance.addConnectCallback({
 
 **Step 3: Listen to Bluetooth scan state and sync with OTAWrapper**
 
-```
+```typescript
 this._bluetoothInstance.addScanCallback({
     onFound: (devs: BTBean.BluetoothDevice[]) => {
         // Notify OTAWrapper of discovered devices
@@ -214,7 +214,7 @@ this._bluetoothInstance.addScanCallback({
 
 **Step 4: Listen to Bluetooth data push and sync with OTAWrapper**
 
-```
+```typescript
 const bleDataCallback: BleDataCallback = {
     onReceiveData: (res: WechatMiniprogram.OnBLECharacteristicValueChangeCallbackResult) => {
         // Notify OTAWrapper of received data
@@ -234,7 +234,7 @@ To check whether the device has been successfully initialized, call the IOTAWrap
 
 **Step 6: Start OTA**
 
-```
+```typescript
 /*--- Start OTA upgrade ---*/
 // Create OTA configuration
 const otaConfig: OTAConfig = new OTAConfig()
@@ -323,11 +323,11 @@ this._OTAWrapper.startOTA(device, otaConfig, onUgradeCallback)
 
 ## 8. Version History
 
-| Date       | Version                                                       | Release Notes                                                     | Maintainer |
-| ---------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------ |
-| 2024/09/09 | [Jieli_OTA_SDK_WeiXin_V2.1.1](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#ota-weixin-sdk-v2-1-1) | 1. Bug Fixes<br />1.1 Fixed issue where single-backup OTA reconnection could not find device on iOS 16<br />1.2 Fixed OTA failure issue on AC695 | Huanming Zhang |
-| 2023/01/11 | [Jieli_OTA_SDK_WeiXin_V2.0.0](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#version-2-0-0) | 1. Optimizations<br />1.1 Extracted Bluetooth connection and data transmission from SDK, and optimized SDK API | Huanming Zhang |
-| 2022/03/17 | [Jieli_OTA_SDK_WeiXin_V1.0.0](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#version-1-0-0) | 1. Added OTA Features<br />1.1 Added single-backup OTA<br>1.2 Added dual-backup OTA     | Huanming Zhang |
+| Date       | Version                                                       | Release Notes                                                     |
+| ---------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 2024/09/09 | [Jieli_OTA_SDK_WeiXin_V2.1.1](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#ota-weixin-sdk-v2-1-1) | 1. Bug Fixes<br />1.1 Fixed issue where single-backup OTA reconnection could not find device on iOS 16<br />1.2 Fixed OTA failure issue on AC695 |
+| 2023/01/11 | [Jieli_OTA_SDK_WeiXin_V2.0.0](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#version-2-0-0) | 1. Optimizations<br />1.1 Extracted Bluetooth connection and data transmission from SDK, and optimized SDK API |
+| 2022/03/17 | [Jieli_OTA_SDK_WeiXin_V1.0.0](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#version-1-0-0) | 1. Added OTA Features<br />1.1 Added single-backup OTA<br>1.2 Added dual-backup OTA     |
 
 
 

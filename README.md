@@ -123,13 +123,13 @@ WeChat-Mini-Program-OTA/
 
 ### 5.1 OTA库使用
 
-#### 5.1.1使用OTAWrapper进行OTA[](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/developmentv2/development_desc.html#otawrapperota)
+#### 5.1.1使用OTAWrapper进行OTA
 
 通常情况下，我们只需要通过使用OTAWrapper就可以完成OTA功能。不需要实现和使用OTA库的接口。
 
 **第一步：初始化OTAWrapper**
 
-```
+```typescript
 //OTAWrapper 初始化
 const otaWrapperOption: OTAWrapperOption = {
     /**是否需要认证。 在上层已经认证过，就不需要认证。**/
@@ -171,7 +171,7 @@ this._OTAWrapper = new OTAWrapper(otaWrapperOption)
 
 **第二步：监听蓝牙连接状态并同步OTAWrapper**
 
-```
+```typescript
 this._bluetoothInstance.addConnectCallback({
     onMTUChange: (dev: any, mtu) => {
         BleSendDataHandler.setMtu(dev.deviceId, mtu)
@@ -194,7 +194,7 @@ this._bluetoothInstance.addConnectCallback({
 
 **第三步：监听蓝牙扫描状态并同步OTAWrapper**
 
-```
+```typescript
 this._bluetoothInstance.addScanCallback({
     onFound: (devs: BTBean.BluetoothDevice[]) => {
         // 通知 OTAWrapper 发现设备
@@ -214,7 +214,7 @@ this._bluetoothInstance.addScanCallback({
 
 **第四步：监听蓝牙数据推送并同步OTAWrapper**
 
-```
+```typescript
 const bleDataCallback: BleDataCallback = {
     onReceiveData: (res: WechatMiniprogram.OnBLECharacteristicValueChangeCallbackResult) => {
         // 通知 OTAWrapper 收到数据
@@ -234,7 +234,7 @@ BleDataHandler.addCallbacks(bleDataCallback)
 
 **第六步：开始OTA**
 
-```
+```typescript
 /*--- 开始执行OTA升级 ---*/
 //创建OTA配置项
 const otaConfig: OTAConfig = new OTAConfig()
@@ -323,11 +323,11 @@ this._OTAWrapper.startOTA(device, otaConfig, onUgradeCallback)
 
 ## 八、版本历史
 
-| 日期       | 版本号                                                       | 发布内容                                                     | 负责人 |
-| ---------- | ------------------------------------------------------------ | ------------------------------------------------------------ | ------ |
-| 2024/09/09 | [Jieli_OTA_SDK_WeiXin_V2.1.1)](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#ota-weixin-sdk-v2-1-1) | 1. 修复功能<br />1.1 修复iOS16单备份升级回连搜不到设备问题<br />1.2 修复AC695升级失败问题 | 张焕明 |
-| 2023/01/11 | [Jieli_OTA_SDK_WeiXin_V2.0.0)](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#version-2-0-0) | 1. 优化功能<br />1.1抽离 SDK 中的蓝牙连接和蓝牙收发数据部分，并优化 SDK API | 张焕明 |
-| 2022/03/17 | [Jieli_OTA_SDK_WeiXin_V1.0.0)](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#version-1-0-0) | 1. 增加OTA功能<br />1.1增加单备份OTA<br>1.2增加双备份OTA     | 张焕明 |
+| 日期       | 版本号                                                       | 发布内容                                                     |
+| ---------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 2024/09/09 | [Jieli_OTA_SDK_WeiXin_V2.1.1)](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#ota-weixin-sdk-v2-1-1) | 1. 修复功能<br />1.1 修复iOS16单备份升级回连搜不到设备问题<br />1.2 修复AC695升级失败问题 |
+| 2023/01/11 | [Jieli_OTA_SDK_WeiXin_V2.0.0)](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#version-2-0-0) | 1. 优化功能<br />1.1抽离 SDK 中的蓝牙连接和蓝牙收发数据部分，并优化 SDK API |
+| 2022/03/17 | [Jieli_OTA_SDK_WeiXin_V1.0.0)](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#version-1-0-0) | 1. 增加OTA功能<br />1.1增加单备份OTA<br>1.2增加双备份OTA     |
 
 
 
