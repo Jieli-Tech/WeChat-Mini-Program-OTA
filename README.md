@@ -82,8 +82,6 @@ cd WeChat-Mini-Program-OTA
 
 ### 3.3 添加依赖库
 
-- **jl_auth_x.x.x.d.ts** — RCSP认证库声明文件
-- **jl_auth_x.x.x.js** — RCSP认证库js文件
 - **jl_ota_x.x.x.d.ts** — OTA流程库声明文件
 - **jl_ota_x.x.x.js** — OTA流程库js文件
 - **jl_rcsp_ota_x.x.x.d.ts** — RCSP-OTA协议库声明文件
@@ -237,25 +235,32 @@ BleDataHandler.addCallbacks(bleDataCallback)
 ```typescript
 /*--- 开始执行OTA升级 ---*/
 //创建OTA配置项
-const otaConfig: OTAConfig = new OTAConfig()
+const otaConfig: JL_OTA.OTAConfig = new JL_OTA.OTAConfig()
 //是否支持新的回连方式
 otaConfig.isSupportNewRebootWay = true
-//固件升级文件数据
-otaConfig.updateFileData = this.upgradeData
 //升级目标设备
 const device = connectedDevices[0]
-const onUgradeCallback: OnUpgradeCallback = {
+const onUpgradeCallback: OnUpgradeCallback = {
     onStartOTA: () => {
     // 开始升级
     },
-    onNeedReconnect: (reConnectMsg: ReConnectMsg) => {
-    // 正在回连
+    onExecuteDisconnectDevice: (): void => {
+     /** 执行断开设备.
+       * Spp设备需实现断开设备，
+       * Ble设备不需要实现断开设备.
+       * */
     },
-    onProgress: (type: UpgradeType, progress: number) => {
+    onNeedReconnect: (reConnectMsg: JL_OTA.ReconnectInfo, reconnectCallback: JL_OTA.OnResultCallback<string>) => {
+    // 正在回连
+    /**  note： 如果需要使用自定义回连方式，请在此处实现。
+     *  连接成功时，调用 reconnectCallback.onResult(device.deviceId);通知SDK 设备的新的deviceId。
+     * **/
+    },
+    onProgress: (type:  JL_OTA.UpgradeType, progress: number) => {
     // 升级进度回调
-     if (type == UpgradeType.UPGRADE_TYPE_CHECK_FILE) {
+     if (type ==  JL_OTA.UpgradeType.UPGRADE_TYPE_CHECK_FILE) {
       // 校验文件（传输BootLoader）
-      } else if (type == UpgradeType.UPGRADE_TYPE_FIRMWARE) {
+      } else if (type ==  JL_OTA.UpgradeType.UPGRADE_TYPE_FIRMWARE) {
       // 传输升级内容
       }
     },
@@ -268,8 +273,14 @@ const onUgradeCallback: OnUpgradeCallback = {
     onError: (error: number, message: string) => {
     // 升级失败
     },
+    onReadData: (offset: number, size: number): Uint8Array | undefined => {
+     //读取升级文件的数据
+    },
+    onRCSPInit: (deviceId: string, isInit: boolean) => {
+        //回调通知-RCSP初始化结果
+    }
 }
-this._OTAWrapper.startOTA(device, otaConfig, onUgradeCallback)
+this._OTAWrapper.startOTA(device, otaConfig, onUpgradeCallback)
 ```
 
 ### 5.2 使用流程
@@ -325,6 +336,7 @@ this._OTAWrapper.startOTA(device, otaConfig, onUgradeCallback)
 
 | 日期       | 版本号                                                       | 发布内容                                                     |
 | ---------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 2026/11/05 | [Jieli_OTA_SDK_WeiXin_V2.2.0)](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#ota-weixin-sdk-v2-2-0) | 1. 优化功能<br />1.1 优化OTA SDK接口<br />                   |
 | 2024/09/09 | [Jieli_OTA_SDK_WeiXin_V2.1.1)](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#ota-weixin-sdk-v2-1-1) | 1. 修复功能<br />1.1 修复iOS16单备份升级回连搜不到设备问题<br />1.2 修复AC695升级失败问题 |
 | 2023/01/11 | [Jieli_OTA_SDK_WeiXin_V2.0.0)](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#version-2-0-0) | 1. 优化功能<br />1.1抽离 SDK 中的蓝牙连接和蓝牙收发数据部分，并优化 SDK API |
 | 2022/03/17 | [Jieli_OTA_SDK_WeiXin_V1.0.0)](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#version-1-0-0) | 1. 增加OTA功能<br />1.1增加单备份OTA<br>1.2增加双备份OTA     |

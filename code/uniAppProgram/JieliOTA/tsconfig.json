@@ -1,0 +1,31 @@
+{
+	"compilerOptions": {
+		"target": "esnext",
+		"module": "esnext",
+		"moduleResolution": "node",
+		"strict": false,
+		"allowJs": true,
+		"checkJs": false,
+		"noEmit": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"lib": ["esnext", "dom"],
+		"types": [],
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./*"]
+		}
+	},
+	"include": [
+		"App.vue",
+		"pages/**/*.vue",
+		"components/**/*.vue",
+		"lib/**/*.ts",
+		"lib/**/*.js",
+		"utils/**/*.ts",
+		"types/**/*.d.ts"
+	],
+	"exclude": ["node_modules", "unpackage", "werxin"]
+}

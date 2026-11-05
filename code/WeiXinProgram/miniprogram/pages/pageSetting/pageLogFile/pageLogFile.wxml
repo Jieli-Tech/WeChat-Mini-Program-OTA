@@ -1,0 +1,23 @@
+<!--pages/set/pages/pageLogFile/pageLogFile.wxml-->
+<view class="contain">
+    <scroll-view class="scroll">
+        <block wx:for="{{logFileList}}">
+            <view class="item_file" data-item="{{item}}" data-index="{{index}}" catch:tap="onClickFile">
+                <view class="left_view">
+                    <view class="name">{{item.name}}</view>
+                    <view class="time">修改时间：{{item.updateTime}}</view>
+                </view>
+                <view>{{item.fileSize}}MB</view>
+            </view>
+            <view class="split-line"></view>
+        </block>
+        <view style="display: flex;flex-direction: column;">
+            <text>使用说明</text>
+            <text>1.最多保存5M的日志内容，超过5M后，旧的日志内容会被删除。</text>
+            <text>2.最新的日志，应保存在修改时间最新的文件中。</text>
+            <text>3.日志文件最多只有5个。</text>
+            <text>4.该日志文件是wx.getLogManager所生成的。</text>
+            <text>5.小程序转发文件不支持多个文件，故此不支持多文件转发。</text>
+        </view>
+    </scroll-view>
+</view>

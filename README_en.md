@@ -82,8 +82,6 @@ cd WeChat-Mini-Program-OTA
 
 ### 3.3 Add Dependencies
 
-- **jl_auth_x.x.x.d.ts** — RCSP authentication library declaration file
-- **jl_auth_x.x.x.js** — RCSP authentication library JS file
 - **jl_ota_x.x.x.d.ts** — OTA workflow library declaration file
 - **jl_ota_x.x.x.js** — OTA workflow library JS file
 - **jl_rcsp_ota_x.x.x.d.ts** — RCSP-OTA protocol library declaration file
@@ -237,25 +235,32 @@ To check whether the device has been successfully initialized, call the IOTAWrap
 ```typescript
 /*--- Start OTA upgrade ---*/
 // Create OTA configuration
-const otaConfig: OTAConfig = new OTAConfig()
+const otaConfig: JL_OTA.OTAConfig = new JL_OTA.OTAConfig()
 // Whether to support the new reconnection method
 otaConfig.isSupportNewRebootWay = true
-// Firmware upgrade file data
-otaConfig.updateFileData = this.upgradeData
 // Target device to upgrade
 const device = connectedDevices[0]
-const onUgradeCallback: OnUpgradeCallback = {
+const onUpgradeCallback: OnUpgradeCallback = {
     onStartOTA: () => {
     // Upgrade started
     },
-    onNeedReconnect: (reConnectMsg: ReConnectMsg) => {
-    // Reconnecting
+    onExecuteDisconnectDevice: (): void => {
+     /** Execute device disconnect.
+       * SPP devices need to implement disconnect,
+       * BLE devices do not need to implement disconnect.
+       * */
     },
-    onProgress: (type: UpgradeType, progress: number) => {
+    onNeedReconnect: (reConnectMsg: JL_OTA.ReconnectInfo, reconnectCallback: JL_OTA.OnResultCallback<string>) => {
+    // Reconnecting
+    /**  note: If you need to use a custom reconnection method, implement it here.
+     *  On successful connection, call reconnectCallback.onResult(device.deviceId); to notify the SDK of the device's new deviceId.
+     * **/
+    },
+    onProgress: (type: JL_OTA.UpgradeType, progress: number) => {
     // Upgrade progress callback
-     if (type == UpgradeType.UPGRADE_TYPE_CHECK_FILE) {
+     if (type == JL_OTA.UpgradeType.UPGRADE_TYPE_CHECK_FILE) {
       // Verifying file (transferring BootLoader)
-      } else if (type == UpgradeType.UPGRADE_TYPE_FIRMWARE) {
+      } else if (type == JL_OTA.UpgradeType.UPGRADE_TYPE_FIRMWARE) {
       // Transferring upgrade content
       }
     },
@@ -268,8 +273,14 @@ const onUgradeCallback: OnUpgradeCallback = {
     onError: (error: number, message: string) => {
     // Upgrade failed
     },
+    onReadData: (offset: number, size: number): Uint8Array | undefined => {
+     // Read upgrade file data
+    },
+    onRCSPInit: (deviceId: string, isInit: boolean) => {
+        // Callback notification - RCSP initialization result
+    }
 }
-this._OTAWrapper.startOTA(device, otaConfig, onUgradeCallback)
+this._OTAWrapper.startOTA(device, otaConfig, onUpgradeCallback)
 ```
 
 ### 5.2 Usage Flow
@@ -325,6 +336,7 @@ this._OTAWrapper.startOTA(device, otaConfig, onUgradeCallback)
 
 | Date       | Version                                                       | Release Notes                                                     |
 | ---------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 2026/11/05 | [Jieli_OTA_SDK_WeiXin_V2.2.0](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#ota-weixin-sdk-v2-2-0) | 1. Optimizations<br />1.1 Optimized OTA SDK interfaces<br /> |
 | 2024/09/09 | [Jieli_OTA_SDK_WeiXin_V2.1.1](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#ota-weixin-sdk-v2-1-1) | 1. Bug Fixes<br />1.1 Fixed issue where single-backup OTA reconnection could not find device on iOS 16<br />1.2 Fixed OTA failure issue on AC695 |
 | 2023/01/11 | [Jieli_OTA_SDK_WeiXin_V2.0.0](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#version-2-0-0) | 1. Optimizations<br />1.1 Extracted Bluetooth connection and data transmission from SDK, and optimized SDK API |
 | 2022/03/17 | [Jieli_OTA_SDK_WeiXin_V1.0.0](https://doc.zh-jieli.com/Apps/Wechat/ota/zh-cn/master/other/publish_record.html#version-1-0-0) | 1. Added OTA Features<br />1.1 Added single-backup OTA<br>1.2 Added dual-backup OTA     |

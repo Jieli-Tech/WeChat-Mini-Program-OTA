@@ -1,0 +1,73 @@
+{
+	"pages": [
+		{
+			"path": "pages/pageConnect/pageConnect",
+			"style": {
+				"navigationBarTitleText": "杰理OTA升级"
+			}
+		},
+		{
+			"path": "pages/pageUpdate/pageUpdate",
+			"style": {
+				"navigationBarTitleText": "杰理OTA升级"
+			}
+		},
+		{
+			"path": "pages/pageSetting/pageSetting",
+			"style": {
+				"navigationBarTitleText": "杰理OTA升级"
+			}
+		},
+		{
+			"path": "pages/pageSetting/pageBLEDataSet/pageBLEDataSet",
+			"style": {
+				"navigationBarTitleText": "BLE通讯配置"
+			}
+		},
+		{
+			"path": "pages/pageSetting/pageCustomCmd/pageCustomCmd",
+			"style": {
+				"navigationBarTitleText": "自定义命令"
+			}
+		},
+		{
+			"path": "pages/pageSetting/pageLogFile/pageLogFile",
+			"style": {
+				"navigationBarTitleText": "Log日志文件"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "杰理OTA升级",
+		"navigationBarBackgroundColor": "#FFFFFF",
+		"backgroundColor": "#F4F7FB"
+	},
+	"tabBar": {
+		"color": "#808080",
+		"selectedColor": "#398BFF",
+		"backgroundColor": "#FFFFFF",
+		"borderStyle": "black",
+		"list": [
+			{
+				"pagePath": "pages/pageConnect/pageConnect",
+				"text": "连接",
+				"iconPath": "static/images/tab_icon_bt_nol.png",
+				"selectedIconPath": "static/images/tab_icon_bt_sel.png"
+			},
+			{
+				"pagePath": "pages/pageUpdate/pageUpdate",
+				"text": "升级",
+				"iconPath": "static/images/tab_icon_update_nol.png",
+				"selectedIconPath": "static/images/tab_icon_update_sel.png"
+			},
+			{
+				"pagePath": "pages/pageSetting/pageSetting",
+				"text": "设置",
+				"iconPath": "static/images/tab_icon_settle_nol.png",
+				"selectedIconPath": "static/images/tab_icon_settle_sel.png"
+			}
+		]
+	},
+	"uniIdRouter": {}
+}
